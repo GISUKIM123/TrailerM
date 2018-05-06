@@ -11,12 +11,17 @@ import UIKit
 class MoviesCollectionViewController: UICollectionViewController {
     let moviesCollectionCell = "moviesCollectionCell"
     
-    @IBAction func movieCellIsClicked(_ sender: Any) {
-        let storyboard = UIStoryboard.init(name: "Main", bundle: nil)
-        
-        let movieDetailViewController = storyboard.instantiateViewController(withIdentifier: "MovieDetailViewController")
-        
-        navigationController?.pushViewController(movieDetailViewController, animated: true)
+    var movies : [Movie]?
+    
+    var movieSelected : Movie?
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "movieDetailSegueFromMovieCollectionPage" {
+            let nav = segue.destination as! UINavigationController
+            if let movieDetailVC = nav.topViewController as? MovieDetailViewController {
+                movieDetailVC.movie = movieSelected
+            }
+        }
     }
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,13 +29,42 @@ class MoviesCollectionViewController: UICollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 12
+        return movies?.count ?? 0
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "moviesCollectionCell", for: indexPath) as! MoviePostCell
-        
+       setupCell(cell: cell, indexPath: indexPath)
         
         return cell
     }
+    
+    func setupCell(cell: MoviePostCell, indexPath: IndexPath) {
+        cell.movie =  movies![indexPath.item]
+        if let post_path = movies![indexPath.item].poster_path {
+            let urlString = imageFetchUrlHeader + post_path
+            cell.moviePostImageView.loadImageUsingCacheWithUrlString(urlString: urlString)
+        }
+        cell.moviePostTiltleLabel.text = movies![indexPath.item].original_title
+        cell.moviePostDescriptionTextView.textContainer.lineBreakMode = .byTruncatingTail
+        cell.moviePostDescriptionTextView.text = movies![indexPath.item].overview
+        cell.moviePostDateLabel.text = formatDate(dateString: movies![indexPath.item].release_date!)
+        setupEventWhenTouched(cell: cell)
+        setupBottomBorder(cell: cell)
+    }
+    
+    func setupEventWhenTouched(cell: MoviePostCell) {
+        
+        cell.isUserInteractionEnabled = true
+        cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openDetailPageWithMovieSelected)))
+    }
+    
+    @objc func openDetailPageWithMovieSelected(gesture: UITapGestureRecognizer) {
+        if let cell = gesture.view as? MoviePostCell {
+            movieSelected = cell.movie
+            performSegue(withIdentifier: "movieDetailSegueFromMovieCollectionPage", sender: self)
+            movieSelected = nil
+        }
+    }
+    
 }

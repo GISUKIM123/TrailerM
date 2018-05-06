@@ -8,7 +8,7 @@
 
 import UIKit
 
-class FavoriteCell: UICollectionViewCell {
+class GenreCell: UICollectionViewCell {
    
     @IBOutlet var moviePostImageView: UIImageView!
     @IBOutlet var moiveTitleLabel: UILabel!

@@ -7,10 +7,16 @@
 //
 
 import UIKit
+import FirebaseDatabase
+
+
+let imageFetchUrlHeader = "https://image.tmdb.org/t/p/w500"
 
 class TrailerController: UIViewController {
     let trailerCell = "trailerCell"
     let trailerHeaderCell = "trailerHeaderCell"
+    
+    var movies : [Movie] = [Movie]()
     
     @IBOutlet var trailerCollectionView: UICollectionView!
 
@@ -18,38 +24,128 @@ class TrailerController: UIViewController {
     
     @IBOutlet var pageIndicator: UIPageControl!
     
-    @IBAction func openMoviesCollectionViewController(_ sender: Any) {
-        let storyboard = UIStoryboard.init(name: "Main", bundle: nil)
-        
-        let moviesCollectionViewController = storyboard.instantiateViewController(withIdentifier: "MoviesCollectionViewController")
-        
-        navigationController?.pushViewController(moviesCollectionViewController, animated: true)
-    }
+    var imagesForCarousel: [Movie] = [Movie]()
     
-    var imagesForCarousel: [String] = ["memorybook_category1", "memorybook_category2", "memorybook_category3", "memorybook_category4", "memorybook_category5"]
+    var popularMoviesInBoxOffice : [Movie] = [Movie]()
+    
+    var moviesReleasedLessThanMonth : [Movie] = [Movie]()
+    
+    var selectedMovie : Movie?
+    
+    var headerSelected : Int?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupNavigation()
         setupCarousel()
-//        fetchMovies()
-        
+        fetchMovies()
     }
     
-//    func fetchMovies() {
-//        if let url = URL(string: "https://theimdbapi.org/api/find/movie?title=transformers&year=2007") {
-//            var request = URLRequest(url: url)
-//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//            request.httpMethod = "GET"
+    func setupNavigation() {
+        navigationItem.title = "Menu Page"
+        colorNavigationBar(barColor: UIColor.init(red: 255/255, green: 255/255, blue: 255/255, alpha: 1), tintColor: .orange)
+        setupButtonsOnNavigationBar()
+    }
+    
+    func setupButtonsOnNavigationBar() {
+        let leftButton = createNavigationButton()
+        leftButton.addTarget(self, action: #selector(openTrailCollectionView), for: .touchUpInside)
+        leftButton.setTitle("Trailers", for: .normal)
+        leftButton.layer.borderColor = UIColor.orange.cgColor
+        leftButton.layer.borderWidth = 2
+        leftButton.frame = CGRect(x: 0, y: 430, width: 70, height: 40)
+        let rightButton = createNavigationButton()
+        rightButton.setImage(UIImage(named: "magnifier")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        rightButton.tintColor = .orange
+        rightButton.frame = CGRect(x: 0, y: 430, width: 40, height: 40)
+        rightButton.addTarget(self, action: #selector(openSearch), for: .touchUpInside)
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: leftButton)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: rightButton)
+    }
+    
+    @objc func openSearch() {
+        performSegue(withIdentifier: "openSearchPage", sender: self)
+    }
+    
+    func createNavigationButton() -> UIButton {
+        let button = UIButton(type: .system)
+        button.setTitleColor(.orange, for: .normal)
+        button.layer.cornerRadius = 20
+        button.clipsToBounds = true
+        
+        return button
+    }
+    
+    @objc func openTrailCollectionView(gesture: UITapGestureRecognizer) {
+        performSegue(withIdentifier: "openTrailerVideoPage", sender: self)
+    }
+    
+    func fetchMovies() {
+        let moviesRef = Database.database().reference()
+        moviesRef.queryLimited(toFirst: 100).observe(.childAdded, with: { (snapshot) in
+            guard let dictionary = snapshot.value as? [String : Any]  else {
+                return
+            }
+            
+            if let movieId = dictionary["id"] as? Int {
+                let urlString = "https://api.themoviedb.org/3/movie/\(movieId)?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US"
+                if let url = URL(string: urlString) {
+                    var request = URLRequest(url: url)
+                    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                    request.httpMethod = "GET"
+                    
+                    let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+                        if error != nil {
+                            return
+                        }
+                        
+                        do {
+                            let dictionary = try JSONSerialization.jsonObject(with: data!, options: []) as? [String : Any]
+                            let movie = Movie(dictionary: dictionary!)
+                            if movie.belongs_to_collection != nil {
+                                self.movies.append(movie)
+                                
+                                
+                                // 7.5
+                                if let rate = movie.vote_average, rate > 7.5 {
+                                    self.popularMoviesInBoxOffice.append(movie)
+                                }
+                                
+                                DispatchQueue.main.async {
+                                    if self.movies.count == 5 {
+                                        self.imagesForCarousel = self.movies
+                                        self.setupCarousel()
+                                    }
+                                    // avoid a crash from IndexOutOfBoundary
+                                    if self.movies.count > 6 {
+                                        self.trailerCollectionView.reloadData()
+                                    }
+                                }
+                            }
+                        } catch {
+                            
+                        }
+                    })
+                    task.resume()
+                }
+            }
+        }, withCancel: nil)
+    }
+    
+//    var timer : Timer?
 //
-//            let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-//                guard let data = data, error == nil else {
-//                    return
-//                }
+//    func attempToReloadCollection() {
+//        self.timer?.invalidate()
+//        self.timer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(self.handleReloadCollection), userInfo: nil, repeats: false)
+//    }
 //
-//            }
-//            task.resume()
+//    @objc func handleReloadCollection() {
+//        DispatchQueue.main.async {
+//            self.trailerCollectionView.reloadData()
 //        }
 //    }
+    
     var imageContentWidthForScrollView : CGFloat = 0.0
     var timerForCarousel : Timer?
 }
@@ -60,19 +156,29 @@ extension TrailerController: UIScrollViewDelegate {
         imagesCarousel.showsHorizontalScrollIndicator = false
         imagesCarousel.isPagingEnabled = true
         setupPageIndicator()
-        
-        for i in 0..<imagesForCarousel.count {
-            let imageView = UIImageView()
-            imageView.image = UIImage(named: imagesForCarousel[i])
-            imageView.contentMode = .scaleToFill
-            let xPosition = self.view.frame.width * CGFloat(i)
-            imageView.frame = CGRect(x: xPosition, y: 0, width: imagesCarousel.frame.width, height: view.frame.height * 0.35)
-            imagesCarousel.contentSize.width = imagesCarousel.frame.width * (CGFloat(i) + 1)
-            imageContentWidthForScrollView += imagesCarousel.frame.width
+        if imagesForCarousel.count == 0 {
+            let imageView = TrailerCellImageView()
             imagesCarousel.addSubview(imageView)
+            imageView.addSubview(imageView.activityIndicatior)
+            imageView.activityIndicatior.centerYAnchor.constraint(equalTo: imagesCarousel.centerYAnchor).isActive = true
+            imageView.activityIndicatior.centerXAnchor.constraint(equalTo: imagesCarousel.centerXAnchor).isActive = true
+        } else {
+            for i in 0..<imagesForCarousel.count {
+                let imageView = UIImageView()
+                if let post_path = imagesForCarousel[i].poster_path {
+                    let urlString = imageFetchUrlHeader + post_path
+                    imageView.loadImageUsingCacheWithUrlString(urlString: urlString)
+                }
+                imageView.contentMode = .scaleToFill
+                let xPosition = self.view.frame.width * CGFloat(i)
+                imageView.frame = CGRect(x: xPosition, y: 0, width: imagesCarousel.frame.width, height: view.frame.height * 0.35)
+                imagesCarousel.contentSize.width = imagesCarousel.frame.width * (CGFloat(i) + 1)
+                imageContentWidthForScrollView += imagesCarousel.frame.width
+                imagesCarousel.addSubview(imageView)
+            }
+            
+            setupAutomateSlider()
         }
-        
-        setupAutomateSlider()
     }
     
     func setupAutomateSlider() {
@@ -115,20 +221,89 @@ extension TrailerController: UICollectionViewDataSource, UICollectionViewDelegat
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: trailerCell, for: indexPath) as! TrailerCell
-        if indexPath.section == 0 {
-            cell.movieTitleLabel.text = "Gisu Kim"
-        } else if indexPath.section == 1 {
-            cell.movieTitleLabel.text = "Gisu Kim"
-        } else if indexPath.section == 2 {
-            cell.movieTitleLabel.text = "Gisu Kim"
-        }
+        setupGestureRecognizer(cell: cell)
+        setupActivityIndicator(cell: cell)
         
+        if indexPath.section == 0 {
+            if movies.count > 6 {
+                let title = movies[indexPath.item].original_title!
+                adjustLabelToFitTitle(title: title, cell: cell)
+                if let post_path = movies[indexPath.item].poster_path {
+                    let urlString = imageFetchUrlHeader + post_path
+                    cell.moviePostImageVIew.loadImageUsingCacheWithUrlString(urlString: urlString)
+                    cell.movie = movies[indexPath.item]
+                }
+            }
+        } else if indexPath.section == 1 {
+            if movies.count > 6 {
+                adjustLabelToFitTitle(title:  popularMoviesInBoxOffice[indexPath.item].original_title!, cell: cell)
+                if let post_path = popularMoviesInBoxOffice[indexPath.item].poster_path {
+                    let urlString = imageFetchUrlHeader + post_path
+                    cell.moviePostImageVIew.loadImageUsingCacheWithUrlString(urlString: urlString)
+                    cell.movie = popularMoviesInBoxOffice[indexPath.item]
+                }
+            }
+        } else if indexPath.section == 2 {
+            cell.movieTitleLabel.text = "Transformers: Age of Extinction, Transformers: Age of Extinction"
+            cell.moviePostImageVIew.image = UIImage(named: "moviePost1")
+        }
+
         return cell
+    }
+    
+    func setupActivityIndicator<T>(cell: T) {
+        if let trailerCellImageView = (cell as? TrailerCell)?.moviePostImageVIew as? TrailerCellImageView {
+            trailerCellImageView.addSubview(trailerCellImageView.activityIndicatior)
+            trailerCellImageView.activityIndicatior.centerYAnchor.constraint(equalTo: trailerCellImageView.centerYAnchor).isActive = true
+            trailerCellImageView.activityIndicatior.centerXAnchor.constraint(equalTo: trailerCellImageView.centerXAnchor).isActive = true
+        }
+    }
+    
+    func setupGestureRecognizer(cell: TrailerCell) {
+        cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showDetailPage)))
+    }
+    
+    @objc func showDetailPage(gesture: UITapGestureRecognizer) {
+        if let view = gesture.view as? TrailerCell {
+            selectedMovie = view.movie
+            performSegue(withIdentifier: "movieDetailSegue", sender: self)
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "openTrailerVideoPage" {
+            if let trailerVideoVC = segue.destination as? TrailerVideosController {
+                trailerVideoVC.trailerController = self
+            }
+        } else if segue.identifier == "movieDetailSegue" {
+            let nav = segue.destination as! UINavigationController
+            let movieDetailVC = nav.topViewController as! MovieDetailViewController
+            movieDetailVC.movie = selectedMovie
+            selectedMovie = nil
+        } else if segue.identifier == "openMovieCollectionPage" {
+            if let movieCollectionVC = segue.destination as? MoviesCollectionViewController {
+                if headerSelected == 0 {
+                    movieCollectionVC.navigationItem.title = "In Theaters"
+                    movieCollectionVC.movies = movies
+                } else if headerSelected == 1 {
+                    movieCollectionVC.navigationItem.title = "Top box office"
+                    movieCollectionVC.movies = popularMoviesInBoxOffice
+                } else if headerSelected == 2 {
+                    // when favorite header is clicked
+                    movieCollectionVC.navigationItem.title = "Your Favorite"
+                }
+            }
+        } else if segue.identifier == "openSearchPage" {
+            if let searchPageVC = segue.destination as? SearchViewController {
+                searchPageVC.movies = movies
+            }
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let headerCell = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: trailerHeaderCell, for: indexPath) as! TrailerHeaderCell
-
+        setupEventWhenTouched(headerCell: headerCell)
+        headerCell.tag = indexPath.section
         if indexPath.section == 0 {
             headerCell.headerNameLabel.text = "In Theaters"
         } else if indexPath.section == 1 {
@@ -138,6 +313,18 @@ extension TrailerController: UICollectionViewDataSource, UICollectionViewDelegat
         }
         
         return headerCell
+    }
+    
+    func setupEventWhenTouched (headerCell: TrailerHeaderCell) {
+        headerCell.isUserInteractionEnabled = true
+        headerCell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleHeaderClicked)))
+    }
+    
+    @objc func handleHeaderClicked(gesture: UITapGestureRecognizer) {
+        if let cell = gesture.view as? TrailerHeaderCell {
+            headerSelected = cell.tag
+            performSegue(withIdentifier: "openMovieCollectionPage", sender: self)
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {

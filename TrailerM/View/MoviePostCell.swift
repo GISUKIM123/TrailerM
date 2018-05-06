@@ -9,7 +9,7 @@
 import UIKit
 
 class MoviePostCell: UICollectionViewCell {
-    
+    var movie : Movie?
     @IBOutlet var moviePostDateLabel: UILabel!
     @IBOutlet var moviePostDescriptionTextView: UITextView!
     @IBOutlet var moviePostTiltleLabel: UILabel!
