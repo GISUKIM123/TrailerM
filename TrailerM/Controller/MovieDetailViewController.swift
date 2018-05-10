@@ -10,7 +10,7 @@ import UIKit
 
 let videoUrlHeader = "https://www.youtube.com/embed/"
 
-class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
+class MovieDetailViewController: UIViewController {
     
     @IBOutlet var containerView: UIView!
     @IBOutlet var scrollView: UIScrollView!
@@ -28,15 +28,7 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
     var webView         : UIWebView?
     
     @IBAction func playTrailer(_ sender: Any) {
-        self.videoLauncher = VideoLauncher()
-        self.setupBlackView(blackView: &self.blackView)
-        self.blackView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.handleDismiss)))
-        self.videoLauncher?.blackView = self.blackView
-        self.webView = UIWebView()
-        self.webView?.backgroundColor = .black
-        self.webView?.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(self.handleSwipe)))
-        self.videoLauncher?.setupVideoLauncher(webView: self.webView!)
-        
+        setupVideoLauncher()
         fetchVideUrlWith((movie?.id)!, movie: movie!) {
             DispatchQueue.main.async {
                 let urlString = videoUrlHeader + (self.movie?.video_key)!
@@ -48,6 +40,17 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
                 }
             }
         }
+    }
+    
+    func setupVideoLauncher() {
+        videoLauncher                       = VideoLauncher()
+        setupBlackView(blackView: &blackView)
+        blackView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDismiss)))
+        videoLauncher?.blackView            = blackView
+        webView                             = UIWebView()
+        webView?.backgroundColor            = .black
+        webView?.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handleSwipe)))
+        videoLauncher?.setupVideoLauncher(webView: webView!)
     }
     
     @objc func handleDismiss() {
@@ -91,13 +94,13 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
     @IBOutlet var backButton: UIButton!
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.isNavigationBarHidden = true
-        UIApplication.shared.statusBarStyle = .lightContent
-        view.backgroundColor = UIColor.init(red: 198/255, green: 226/255, blue: 255/255, alpha: 1)
+        UIApplication.shared.statusBarStyle     = .lightContent
+        view.backgroundColor                    = UIColor.init(red: 198/255, green: 226/255, blue: 255/255, alpha: 1)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        navigationController?.isNavigationBarHidden = false
-        UIApplication.shared.statusBarStyle = .default
+        navigationController?.isNavigationBarHidden     = false
+        UIApplication.shared.statusBarStyle             = .default
     }
     
     override func viewDidLoad() {
@@ -138,9 +141,9 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
         }
         
         let attributes = [NSAttributedStringKey.font: UIFont(name: "AmericanTypewriter-Bold", size: 18) ?? UIFont.boldSystemFont(ofSize: 18), NSAttributedStringKey.foregroundColor: UIColor.white]
-        movietitle.attributedText = createAtrributes(text: title, attributes: attributes)
-        movietitle.numberOfLines = estimateNumberOfLinesNeeded(text: title, attributes: attributes)
-        movietitle.lineBreakMode = .byTruncatingTail
+        movietitle.attributedText   = createAtrributes(text: title, attributes: attributes)
+        movietitle.numberOfLines    = estimateNumberOfLinesNeeded(text: title, attributes: attributes)
+        movietitle.lineBreakMode    = .byTruncatingTail
         movietitle.sizeToFit()
     }
     
@@ -150,20 +153,16 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
             return
         }
         
-        let attributes = [NSAttributedStringKey.font: UIFont(name: "Baskerville-BoldItalic", size: 14) ?? UIFont.boldSystemFont(ofSize: 14), NSAttributedStringKey.foregroundColor: UIColor.init(red: 241/255, green: 245/255, blue: 255/255, alpha: 1)]
-        movieDescription.attributedText = createAtrributes(text: description, attributes: attributes)
-        let estimateSize = estimateWidthAndHeightFor(text: description, attributes: attributes)
-        let numberOfLines = estimateNumberOfLinesNeeded(text: description, attributes: attributes)
-        let height = CGFloat(numberOfLines) * estimateSize.height
-        let decriptionY = movieDescription.frame.origin.y
-        let extensiveHeight = abs(decriptionY - height)
+        let attributes                      = [NSAttributedStringKey.font: UIFont(name: "Baskerville-BoldItalic", size: 14) ?? UIFont.boldSystemFont(ofSize: 14), NSAttributedStringKey.foregroundColor: UIColor.init(red: 241/255, green: 245/255, blue: 255/255, alpha: 1)]
+        movieDescription.attributedText     = createAtrributes(text: description, attributes: attributes)
+        let estimateSize                    = estimateWidthAndHeightFor(text: description, attributes: attributes)
+        let numberOfLines                   = estimateNumberOfLinesNeeded(text: description, attributes: attributes)
+        let height                          = CGFloat(numberOfLines) * estimateSize.height
+        let decriptionY                     = movieDescription.frame.origin.y
+        let extensiveHeight                 = abs(decriptionY - height)
         movieDescription.sizeToFit()
         scrollView.contentSize.height = contentView.frame.height + extensiveHeight
     }
-    
-//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        print(123123)
-//    }
     
     func setupDateLabel() {
         guard let date = movie?.release_date else {
@@ -178,9 +177,9 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
             return
         }
         
-        let legnthString = "\(Int(legnth)) mins"
+        let legnthString                    = "\(Int(legnth)) mins"
         
-        videoLengthLabel.attributedText = createAtrributes(text: legnthString, attributes: [NSAttributedStringKey.font: UIFont(name: "AmericanTypewriter-Bold", size: 16) ?? UIFont.boldSystemFont(ofSize: 16), NSAttributedStringKey.foregroundColor: UIColor.init(red: 255/255, green: 173/255, blue: 49/255, alpha: 1)])
+        videoLengthLabel.attributedText     = createAtrributes(text: legnthString, attributes: [NSAttributedStringKey.font: UIFont(name: "AmericanTypewriter-Bold", size: 16) ?? UIFont.boldSystemFont(ofSize: 16), NSAttributedStringKey.foregroundColor: UIColor.init(red: 255/255, green: 173/255, blue: 49/255, alpha: 1)])
     }
     
     func setupRateBar() {
@@ -189,24 +188,23 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
             return
         }
         
-        let rateFormate = "\(rate)/10"
-        rateLabel.attributedText = createAtrributes(text: rateFormate, attributes: [NSAttributedStringKey.font: UIFont(name: "AmericanTypewriter-Bold", size: 16) ?? UIFont.boldSystemFont(ofSize: 14), NSAttributedStringKey.foregroundColor: UIColor.init(red: 255/255, green: 173/255, blue: 49/255, alpha: 1)])
+        let rateFormate             = "\(rate)/10"
+        rateLabel.attributedText    = createAtrributes(text: rateFormate, attributes: [NSAttributedStringKey.font: UIFont(name: "AmericanTypewriter-Bold", size: 16) ?? UIFont.boldSystemFont(ofSize: 14), NSAttributedStringKey.foregroundColor: UIColor.init(red: 255/255, green: 173/255, blue: 49/255, alpha: 1)])
         
     }
     
     func setupContainer() {
         // TODO: assign background image as a movie post
-        let backgroundImage = UIImageView(frame: UIScreen.main.bounds)
+        let backgroundImage                 = UIImageView(frame: UIScreen.main.bounds)
         if let poster_path = movie?.poster_path {
-            let urlString = "https://image.tmdb.org/t/p/w500\(poster_path)"
+            let urlString                   = "https://image.tmdb.org/t/p/w500\(poster_path)"
             backgroundImage.loadImageUsingCacheWithUrlString(urlString: urlString)
-            backgroundImage.contentMode = .scaleToFill
+            backgroundImage.contentMode     = .scaleToFill
             containerView.insertSubview(backgroundImage, at: 0)
         }
     }
     
     func setupContentContainerView() {
         contentView.backgroundColor = UIColor.black.withAlphaComponent(0.9)
-        
     }
 }

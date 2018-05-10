@@ -15,15 +15,16 @@ class LocationSettingView: UIView, MKMapViewDelegate, CLLocationManagerDelegate 
     
     let locationManager = CLLocationManager()
     
+    var yourLocationCoordinate : CLLocationCoordinate2D?
+    
     lazy var sharedButton : UIButton = {
         let button = UIButton()
         button.setTitle("Shared location", for: .normal)
-        button.titleLabel?.textAlignment = .center
         button.setTitleColor(.orange, for: .normal)
-        button.backgroundColor = .white
         button.addTarget(self, action: #selector(handleShared), for: .touchUpInside)
-        button.showsTouchWhenHighlighted = true
-        
+        button.titleLabel?.textAlignment    = .center
+        button.backgroundColor              = .white
+        button.showsTouchWhenHighlighted    = true
         
         return button
     }()
@@ -35,27 +36,27 @@ class LocationSettingView: UIView, MKMapViewDelegate, CLLocationManagerDelegate 
     lazy var openButton : UIButton = {
         let button = UIButton()
         button.setTitle("Open in Maps", for: .normal)
-        button.titleLabel?.textAlignment = .center
         button.setTitleColor(.orange, for: .normal)
-        button.backgroundColor = .white
         button.addTarget(self, action: #selector(handleOpenInMaps), for: .touchUpInside)
-        button.showsTouchWhenHighlighted = true
+        button.titleLabel?.textAlignment        = .center
+        button.backgroundColor                  = .white
+        button.showsTouchWhenHighlighted        = true
         
         return button
     }()
     
     @objc func handleOpenInMaps() {
-        print(234)
+        locationSettingHelper?.settingsController?.openMapInGoogleMap(location: yourLocationCoordinate!)
     }
     
     lazy var cancelButton : UIButton = {
         let button = UIButton()
         button.setTitle("Cancel", for: .normal)
-        button.titleLabel?.textAlignment = .center
         button.setTitleColor(.orange, for: .normal)
-        button.backgroundColor = .white
         button.addTarget(self, action: #selector(handleCancel), for: .touchUpInside)
-        button.showsTouchWhenHighlighted = true
+        button.titleLabel?.textAlignment    = .center
+        button.backgroundColor              = .white
+        button.showsTouchWhenHighlighted    = true
         
         return button
     }()
@@ -75,9 +76,10 @@ class LocationSettingView: UIView, MKMapViewDelegate, CLLocationManagerDelegate 
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         mapView.delegate                = self
-        let yourLocationCoordinate      = getYourLocation()
-        setupMapView(yourLocation: yourLocationCoordinate)
+        yourLocationCoordinate          = getYourLocation()
+        setupMapView(yourLocation: yourLocationCoordinate!)
         
         addSubview(mapView)
         mapView.translatesAutoresizingMaskIntoConstraints = false
@@ -166,7 +168,7 @@ class LocationSettingHelper: NSObject {
             containerView?.addSubview(locationSettingView)
             
             UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-                locationSettingView.center          = keyWindow.center
+                locationSettingView.center              = keyWindow.center
             }) { (completed) in
                 if completed {
                     

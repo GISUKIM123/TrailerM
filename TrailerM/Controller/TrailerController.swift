@@ -52,15 +52,10 @@ class TrailerController: UIViewController {
         fetchPopular()
         fetchUpComing()
     }
-    
+
     private func fetchUpComing() {
-        let urlString = "https://api.themoviedb.org/3/movie/upcoming?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1"
-        if let url = URL(string: urlString) {
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "GET"
-            
-            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+        if let request = createRequest(urlString: "https://api.themoviedb.org/3/movie/upcoming?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1") {
+            URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
                 if error != nil {
                     return
                 }
@@ -76,7 +71,7 @@ class TrailerController: UIViewController {
                                 self.upcomingMovies.first(where: { (element) -> Bool in
                                     return element.id == movie.id
                                 })?.runtime = movie.runtime
-                            }   
+                            }
                         }
                         
                         DispatchQueue.main.async {
@@ -88,19 +83,13 @@ class TrailerController: UIViewController {
                 } catch {
                     
                 }
-            })
-            task.resume()
+            }).resume()
         }
     }
     
     private func fetchTopRated() {
-        let urlString = "https://api.themoviedb.org/3/movie/top_rated?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1"
-        if let url = URL(string: urlString) {
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "GET"
-            
-            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+        if let request = createRequest(urlString: "https://api.themoviedb.org/3/movie/top_rated?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1") {
+            URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
                 if error != nil {
                     return
                 }
@@ -134,19 +123,13 @@ class TrailerController: UIViewController {
                 } catch {
                     
                 }
-            })
-            task.resume()
+            }).resume()
         }
     }
     
     private func fetchPopular() {
-        let urlString = "https://api.themoviedb.org/3/movie/popular?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1"
-        if let url = URL(string: urlString) {
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "GET"
-            
-            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+        if let request = createRequest(urlString: "https://api.themoviedb.org/3/movie/popular?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1") {
+            URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
                 if error != nil {
                     return
                 }
@@ -175,13 +158,12 @@ class TrailerController: UIViewController {
                 } catch {
                     
                 }
-            })
-            task.resume()
+            }).resume()
         }
     }
     
     func setupNavigation() {
-        navigationItem.title = "Menu Page"
+        navigationItem.title = "TrailerM"
         colorNavigationBar(barColor: UIColor.init(red: 255/255, green: 255/255, blue: 255/255, alpha: 1), tintColor: .orange)
         setupButtonsOnNavigationBar()
     }
@@ -305,52 +287,24 @@ extension TrailerController: UICollectionViewDataSource, UICollectionViewDelegat
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: trailerCell, for: indexPath) as! TrailerCell
         setupActivityIndicator(cell: cell)
-        
         if indexPath.section == 0 {
-            setupForFirstSection(cell: cell, indexPath: indexPath)
+            setupCell(cell: cell, indexPath: indexPath, array: topRatedMovies)
         } else if indexPath.section == 1 {
-            setupForSecondSection(cell: cell, indexPath: indexPath)
+            setupCell(cell: cell, indexPath: indexPath, array: popularMoviesInBoxOffice)
         } else if indexPath.section == 2 {
-            setupForThridSection(cell: cell, indexPath: indexPath)
+            setupCell(cell: cell, indexPath: indexPath, array: upcomingMovies)
         }
-        
         setupGestureRecognizer(cell: cell)
+        
         return cell
     }
     
-    func setupForThridSection(cell: TrailerCell, indexPath: IndexPath) {
-        if upcomingMovies.count > 6 {
+    func setupCell(cell: TrailerCell, indexPath: IndexPath, array: [Movie]) {
+        if array.count > 6 {
             if cell.movie == nil {
-                cell.movie = popularMoviesInBoxOffice[indexPath.item]
+                cell.movie = array[indexPath.item]
             }
             adjustLabelToFitTitle(title:  (cell.movie?.original_title)!, cell: cell)
-            if let post_path = cell.movie?.poster_path {
-                let urlString = imageFetchUrlHeader + post_path
-                cell.moviePostImageVIew.loadImageUsingCacheWithUrlString(urlString: urlString)
-            }
-        }
-    }
-    
-    func setupForSecondSection(cell: TrailerCell, indexPath: IndexPath) {
-        if popularMoviesInBoxOffice.count > 6 {
-            if cell.movie == nil {
-                cell.movie = popularMoviesInBoxOffice[indexPath.item]
-            }
-            adjustLabelToFitTitle(title:  (cell.movie?.original_title)!, cell: cell)
-            if let post_path = cell.movie?.poster_path {
-                let urlString = imageFetchUrlHeader + post_path
-                cell.moviePostImageVIew.loadImageUsingCacheWithUrlString(urlString: urlString)
-            }
-        }
-    }
-    
-    func setupForFirstSection(cell: TrailerCell, indexPath: IndexPath) {
-        if topRatedMovies.count > 6 {
-            if cell.movie == nil {
-                cell.movie = topRatedMovies[indexPath.item]
-            }
-            let title = cell.movie?.original_title
-            adjustLabelToFitTitle(title: title!, cell: cell)
             if let post_path = cell.movie?.poster_path {
                 let urlString = imageFetchUrlHeader + post_path
                 cell.moviePostImageVIew.loadImageUsingCacheWithUrlString(urlString: urlString)

@@ -12,8 +12,8 @@ class TrailerCellImageView: UIImageView {
     let activityIndicatior : UIActivityIndicatorView = {
         let ai = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
         ai.startAnimating()
-        ai.isUserInteractionEnabled = true
-        ai.translatesAutoresizingMaskIntoConstraints = false
+        ai.isUserInteractionEnabled                     = true
+        ai.translatesAutoresizingMaskIntoConstraints    = false
         
         return ai
     }()

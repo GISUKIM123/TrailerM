@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MapKit
 
 enum SettingAction {
     case Location
@@ -26,12 +27,12 @@ class SettingsController: UIViewController {
     @IBOutlet var settingsLabel: UILabel!
     @IBOutlet var settingsCollectionView: UICollectionView!
     
-    var generalSectionLabels = ["Set Location", "Remove Personal Settings"]
-    var helpSectionLabels = ["Information", "FAQ", "Terms and Privacy", "Tutorial"]
-    var iconNamesForGeneral = ["settings_location_icon", "settings_remove_icon"]
-    var iconNamesForHelp = ["settings_info_icon", "settings_FAQ_icon", "settings_privacy_icon", "settings_tutorial_icon"]
-    var settingActionsForGeneral : [SettingAction] = [.Location, .RemovePersonalSettings]
-    var settingActionsForHelp : [SettingAction] = [.Info, .FAQ, .Privacy, .Tutorial]
+    var generalSectionLabels                        = ["Set Location", "Remove Personal Settings"]
+    var helpSectionLabels                           = ["Information", "FAQ", "Terms and Privacy", "Tutorial"]
+    var iconNamesForGeneral                         = ["settings_location_icon", "settings_remove_icon"]
+    var iconNamesForHelp                            = ["settings_info_icon", "settings_FAQ_icon", "settings_privacy_icon", "settings_tutorial_icon"]
+    var settingActionsForGeneral : [SettingAction]  = [.Location, .RemovePersonalSettings]
+    var settingActionsForHelp : [SettingAction]     = [.Info, .FAQ, .Privacy, .Tutorial]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,15 +58,15 @@ extension SettingsController: UICollectionViewDataSource, UICollectionViewDelega
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: settingsCell, for: indexPath) as! SettingsCell
         let settingLabelAttributes = [NSAttributedStringKey.font: UIFont(name: "GillSans-Bold", size: 14) ?? UIFont.boldSystemFont(ofSize: 14), NSAttributedStringKey.foregroundColor: UIColor.orange]
         if indexPath.section == 0 {
-            cell.settingLabel.attributedText = createAtrributes(text: generalSectionLabels[indexPath.item], attributes: settingLabelAttributes)
-            cell.settingIconImageView.image = UIImage(named: iconNamesForGeneral[indexPath.item])
-            cell.settingRightArrowBtn.isHidden = true
-            cell.settingAction = settingActionsForGeneral[indexPath.item]
+            cell.settingLabel.attributedText    = createAtrributes(text: generalSectionLabels[indexPath.item], attributes: settingLabelAttributes)
+            cell.settingIconImageView.image     = UIImage(named: iconNamesForGeneral[indexPath.item])
+            cell.settingRightArrowBtn.isHidden  = true
+            cell.settingAction                  = settingActionsForGeneral[indexPath.item]
             
         } else if indexPath.section == 1 {
-            cell.settingLabel.attributedText = createAtrributes(text: helpSectionLabels[indexPath.item], attributes: settingLabelAttributes)
-            cell.settingIconImageView.image = UIImage(named: iconNamesForHelp[indexPath.item])
-            cell.settingAction = settingActionsForHelp[indexPath.item]
+            cell.settingLabel.attributedText    = createAtrributes(text: helpSectionLabels[indexPath.item], attributes: settingLabelAttributes)
+            cell.settingIconImageView.image     = UIImage(named: iconNamesForHelp[indexPath.item])
+            cell.settingAction                  = settingActionsForHelp[indexPath.item]
         }
         
         setupBottomBorder(cell: cell)
@@ -149,6 +150,15 @@ extension SettingsController {
         locationSettingHelper.settingsController    = self
         locationSettingHelper.containerView         = containerView
         locationSettingHelper.showLocationSettingBox()
+    }
+    
+    func openMapInGoogleMap(location: CLLocationCoordinate2D) {
+        //Working in Swift new versions.
+        if (UIApplication.shared.canOpenURL(URL(string:"comgooglemaps://")!)) {
+            UIApplication.shared.open(URL(string: "comgooglemaps://?saddr=&daddr=\(Float(location.latitude)),\(Float(location.longitude))&directionsmode=driving")!, options: [:], completionHandler: nil)
+        } else {
+            NSLog("Can't use com.google.maps://");
+        }
     }
 }
 

@@ -106,17 +106,17 @@ class SlideInGenreView: NSObject {
     weak var genreController : GenreController?
     func shoowSlider() {
         if let keyWindow = UIApplication.shared.keyWindow {
-            blackView?.frame = keyWindow.frame
-            blackView?.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+            blackView?.frame                    = keyWindow.frame
+            blackView?.backgroundColor          = UIColor.black.withAlphaComponent(0.5)
             
-            genreView = GenreView()
-            genreView?.genreController = genreController
+            genreView                           = GenreView()
+            genreView?.genreController          = genreController
             
-            genreView?.frame = CGRect(x: -(keyWindow.frame.width), y: navHeight!, width: keyWindow.frame.width * 0.7, height: keyWindow.frame.height - navHeight!)
+            genreView?.frame                    = CGRect(x: -(keyWindow.frame.width), y: navHeight!, width: keyWindow.frame.width * 0.7, height: keyWindow.frame.height - navHeight!)
             blackView?.addSubview(genreView!)
             
             UIView.animate(withDuration: 0.3, delay: 0.2, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-                self.genreView?.frame = CGRect(x: 0, y: navHeight!, width: keyWindow.frame.width * 0.7, height: keyWindow.frame.height - navHeight!)
+                self.genreView?.frame           = CGRect(x: 0, y: navHeight!, width: keyWindow.frame.width * 0.7, height: keyWindow.frame.height - navHeight!)
             }, completion: nil)
             
             keyWindow.addSubview(blackView!)

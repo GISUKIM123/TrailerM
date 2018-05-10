@@ -8,6 +8,9 @@
 
 import UIKit
 
+
+// cache images
+
 let imageCache = NSCache<NSString, UIImage>()
 
 extension UIImageView {
@@ -17,10 +20,7 @@ extension UIImageView {
         
         //check cache for image first
         if let cachedImage = imageCache.object(forKey: (urlString as NSString)){
-            if let trailerCellImageView = self as? TrailerCellImageView {
-                trailerCellImageView.activityIndicatior.stopAnimating()
-                trailerCellImageView.activityIndicatior.removeFromSuperview()
-            }
+            self.deleteActivityIndicator()
             self.image = cachedImage
             return
         }
@@ -39,29 +39,40 @@ extension UIImageView {
             DispatchQueue.main.async {
                 if let downloadedImage = UIImage(data: data!), let compressedImageData = UIImageJPEGRepresentation(downloadedImage, 0.1), let compressedImage = UIImage(data: compressedImageData) {
                     imageCache.setObject( compressedImage, forKey: (urlString as NSString))
-                   
-                    if let trailerCellImageView = self as? TrailerCellImageView {
-                        trailerCellImageView.activityIndicatior.stopAnimating()
-                        trailerCellImageView.activityIndicatior.removeFromSuperview()
-                    }
-                    
+                    self.deleteActivityIndicator()
                     self.image = compressedImage
                 }
             }
         }
         dataTask.resume()
     }
+    
+    func deleteActivityIndicator() {
+        if let trailerCellImageView = self as? TrailerCellImageView {
+            trailerCellImageView.activityIndicatior.stopAnimating()
+            trailerCellImageView.activityIndicatior.removeFromSuperview()
+        }
+    }
 }
 
+// fetch data
+
 extension UIViewController {
-    func fetchVideUrlWith(_ movieId: Int, movie: Movie, completion: @escaping () -> Void) {
-        let urlString = "https://api.themoviedb.org/3/movie/\(movieId)/videos?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US"
+    func createRequest(urlString: String) -> URLRequest? {
         if let url = URL(string: urlString) {
             var request = URLRequest(url: url)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpMethod = "GET"
             
-            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+            return request
+        }
+        
+        return nil
+    }
+    
+    func fetchVideUrlWith(_ movieId: Int, movie: Movie, completion: @escaping () -> Void) {
+        if let request = createRequest(urlString: "https://api.themoviedb.org/3/movie/\(movieId)/videos?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US") {
+            URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
                 if error != nil {
                     return
                 }
@@ -81,18 +92,13 @@ extension UIViewController {
                 } catch {
                     
                 }
-            })
-            task.resume()
+            }).resume()
         }
-        
     }
+    
     func fetchMovieWith(_ id: Int, completion: @escaping (Movie) -> Void) {
-        if let url = URL(string: "https://api.themoviedb.org/3/movie/\(id)?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US") {
-            var request = URLRequest(url: url)
-            request.httpMethod = "GET"
-            request.setValue("application/json", forHTTPHeaderField: "Content_Type")
-            
-            let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+        if let request = createRequest(urlString: "https://api.themoviedb.org/3/movie/\(id)?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US") {
+            URLSession.shared.dataTask(with: request) { (data, response, error) in
                 if error != nil {
                     return
                 }
@@ -103,35 +109,14 @@ extension UIViewController {
                 } catch {
                     
                 }
-            }
-            
-            task.resume()
+            }.resume()
         }
     }
-    func sortByReleaseDay(movies: inout [Movie]) {
-        movies.sort(by: { (movie1, movie2) -> Bool in
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            
-            return dateFormatter.date(from: movie1.release_date!)! > dateFormatter.date(from: movie2.release_date!)!
-        })
-    }
-    func formatDate(dateString: String) -> String {
-        let dateFormat = DateFormatter()
-        dateFormat.dateFormat = "yyyy-MM-dd"
-        if let date = dateFormat.date(from: dateString) {
-            dateFormat.dateFormat = "MMM yyyy"
-            return dateFormat.string(from: date)
-        }
-        
-        return "unidentified"
-    }
-    
-    func setupBlackView(blackView: inout UIView?) {
-        blackView = UIView()
-        blackView?.isUserInteractionEnabled = true
-    }
-    
+}
+
+// alert
+
+extension UIViewController {
     func alertMessage(message : String, rootController : UIViewController) {
         let alert = UIAlertController(title: "", message: message, preferredStyle: .alert)
         let subview = (alert.view.subviews.first?.subviews.first?.subviews.first!)! as UIView
@@ -150,11 +135,47 @@ extension UIViewController {
             alert.dismiss(animated: true, completion: nil)
         }
     }
-    
+}
+
+// array
+
+extension UIViewController {
+    func sortByReleaseDay(movies: inout [Movie]) {
+        movies.sort(by: { (movie1, movie2) -> Bool in
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            
+            return dateFormatter.date(from: movie1.release_date!)! > dateFormatter.date(from: movie2.release_date!)!
+        })
+    }
+}
+
+// text
+
+extension UIViewController {
     func estimateWidthAndHeightFor(text: String, attributes: [NSAttributedStringKey: Any]) -> CGSize {
         return (text as NSString).size(withAttributes: attributes)
     }
     
+    func formatDate(dateString: String) -> String {
+        let dateFormat = DateFormatter()
+        dateFormat.dateFormat = "yyyy-MM-dd"
+        if let date = dateFormat.date(from: dateString) {
+            dateFormat.dateFormat = "MMM yyyy"
+            return dateFormat.string(from: date)
+        }
+        
+        return "unidentified"
+    }
+}
+
+extension UIViewController {
+    
+    func setupBlackView(blackView: inout UIView?) {
+        blackView = UIView()
+        blackView?.isUserInteractionEnabled = true
+    }
+   
     func colorNavigationBar(barColor: UIColor, tintColor: UIColor) {
         navigationController?.navigationBar.isTranslucent = false
         navigationController?.navigationBar.barTintColor = barColor
@@ -195,8 +216,7 @@ extension UIViewController {
         
         return layer
     }
-    
-    
+  
     func adjustLabelToFitTitle<T>(title: String, cell: T) {
         let size = estimateWidthAndHeightFor(text: title, attributes: [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 14)])
         if let cell = cell as? TrailerCell {
@@ -233,8 +253,10 @@ extension UIViewController {
             movieCollectionViewImageView.activityIndicatior.centerXAnchor.constraint(equalTo: movieCollectionViewImageView.centerXAnchor).isActive = true
         }
     }
-    
-    // tracking on a position of video view 
+}
+
+extension UIViewController {
+    // tracking on a position of video view
     
     func trackVideoViewMoving(location: CGPoint, videoView: UIWebView, videoLauncher: VideoLauncher) {
         let changedX =  location.x + view.frame.width / 2

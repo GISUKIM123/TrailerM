@@ -43,12 +43,8 @@ class MoviesCollectionViewController: UICollectionViewController {
     }
     
     private func fetchMoreMovies(urlString: String) {
-        if let url = URL(string: urlString) {
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "GET"
-            
-            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+        if let request = createRequest(urlString: urlString) {
+            URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
                 if error != nil {
                     return
                 }
@@ -69,8 +65,7 @@ class MoviesCollectionViewController: UICollectionViewController {
                 } catch {
                     
                 }
-            })
-            task.resume()
+            }).resume()
         }
     }
     
@@ -87,8 +82,6 @@ class MoviesCollectionViewController: UICollectionViewController {
             }
         }
     }
-    
-    
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return movies?.count ?? 0
@@ -110,9 +103,9 @@ class MoviesCollectionViewController: UICollectionViewController {
         }
         
         adjustLabelToFitTitle(title: movies![indexPath.item].original_title!, cell: cell)
-        cell.moviePostDescriptionTextView.textContainer.lineBreakMode = .byTruncatingTail
-        cell.moviePostDescriptionTextView.text = movies![indexPath.item].overview
-        cell.moviePostDateLabel.text = formatDate(dateString: movies![indexPath.item].release_date!)
+        cell.moviePostDescriptionTextView.textContainer.lineBreakMode   = .byTruncatingTail
+        cell.moviePostDescriptionTextView.text                          = movies![indexPath.item].overview
+        cell.moviePostDateLabel.text                                    = formatDate(dateString: movies![indexPath.item].release_date!)
         setupEventWhenTouched(cell: cell)
         setupBottomBorder(cell: cell)
     }

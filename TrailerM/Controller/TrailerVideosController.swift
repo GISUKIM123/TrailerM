@@ -55,22 +55,17 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
             cell.trailerVideoImageVIew.loadImageUsingCacheWithUrlString(urlString: urlString)
         }
         
-        cell.trailerVideoTitle.text = cell.movie?.original_title
-        cell.trailerVideoDescription.text = cell.movie?.overview
-        cell.dateLabel.text = formatDate(dateString: (cell.movie?.release_date!)!)
-        cell.isUserInteractionEnabled = true
+        cell.trailerVideoTitle.text         = cell.movie?.original_title
+        cell.trailerVideoDescription.text   = cell.movie?.overview
+        cell.dateLabel.text                 = formatDate(dateString: (cell.movie?.release_date!)!)
+        cell.isUserInteractionEnabled       = true
         cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showVideoTrailer)))
         
     }
     
     @objc func showVideoTrailer(gesture: UITapGestureRecognizer) {
         if let cell = gesture.view as? TrailerVideoCell {
-            setupBlackView(blackView: &blackView)
-            blackView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.handleDismiss)))
-            videoLauncher = VideoLauncher()
-            videoLauncher?.blackView = blackView
-            webView = UIWebView()
-            videoLauncher?.setupVideoLauncher(webView: webView!)
+            setupVideoLauncher()
             fetchVideUrlWith((cell.movie?.id)!, movie: cell.movie!) {
                 DispatchQueue.main.async {
                     if let video_key = cell.movie?.video_key {
@@ -87,6 +82,15 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
         }
     }
     
+    func setupVideoLauncher() {
+        setupBlackView(blackView: &blackView)
+        blackView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.handleDismiss)))
+        videoLauncher                   = VideoLauncher()
+        videoLauncher?.blackView        = blackView
+        webView                         = UIWebView()
+        videoLauncher?.setupVideoLauncher(webView: webView!)
+    }
+    
     @objc func handleDismiss() {
         UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             self.blackView?.removeFromSuperview()
@@ -96,7 +100,6 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
             }
         }
     }
-    
     
     var location = CGPoint(x: 0, y: 0)
     
@@ -124,5 +127,4 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: view.frame.width, height: view.frame.height / 4)
     }
-    
 }

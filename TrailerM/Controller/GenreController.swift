@@ -52,13 +52,8 @@ class GenreController: UIViewController, UIScrollViewDelegate {
     
     func fetchGenreList() {
         genres = [Genre]()
-        
-        if let url = URL(string: "https://api.themoviedb.org/3/genre/movie/list?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US") {
-            var request = URLRequest(url: url)
-            request.httpMethod = "GET"
-            request.setValue("application/json", forHTTPHeaderField: "Content_Type")
-            
-            let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+        if let request = createRequest(urlString: "https://api.themoviedb.org/3/genre/movie/list?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US"){
+            URLSession.shared.dataTask(with: request) { (data, response, error) in
                 if error != nil {
                     return
                 }
@@ -75,12 +70,10 @@ class GenreController: UIViewController, UIScrollViewDelegate {
                             self.genres?.append(genre)
                         }
                     }
-                    
                 }catch {
                     
                 }
-            }
-            task.resume()
+            }.resume()
         }
     }
     
@@ -113,9 +106,11 @@ class GenreController: UIViewController, UIScrollViewDelegate {
         blackView?.isUserInteractionEnabled = true
         blackView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDismissSliderContainerView)))
         if leftBarButton?.customView?.transform == .identity {
-            UIView.animate(withDuration: 0.2) {
-                self.navigationItem.leftBarButtonItem?.customView?.transform = CGAffineTransform(rotationAngle: 90 * (.pi / 180))
+            UIView.animate(withDuration: 0.4) {
+                self.navigationItem.leftBarButtonItem?.customView?.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
+                self.navigationItem.leftBarButtonItem?.customView?.transform = CGAffineTransform(rotationAngle: 180 * (.pi / 180))
             }
+            
         }
     }
     
@@ -165,22 +160,15 @@ class GenreController: UIViewController, UIScrollViewDelegate {
     }
     
     func fetchMoreByGenre(id: Int) {
-        if let url = URL(string: "https://api.themoviedb.org/3/genre/\(id)/movies?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&include_adult=false&sort_by=created_at.asc&page=\(nextPageNumber)") {
-            var request = URLRequest(url: url)
-            request.httpMethod = "GET"
-            request.setValue("application/json", forHTTPHeaderField: "Content_Type")
-            
-            let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+        if let request = createRequest(urlString: "https://api.themoviedb.org/3/genre/\(id)/movies?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&include_adult=false&sort_by=created_at.asc&page=\(nextPageNumber)") {
+            URLSession.shared.dataTask(with: request) { (data, response, error) in
                 if error != nil {
                     return
                 }
                 
                 do {
                     let dataJson = try JSONSerialization.jsonObject(with: data!, options: [])
-                    guard let dictionary = dataJson as? [String : Any] else {
-                        return
-                    }
-                    print(dictionary)
+                    guard let dictionary = dataJson as? [String : Any] else { return }
                     if let movies = dictionary["results"] as? [AnyObject] {
                         for movieDictionary in movies {
                             let movieUnderGenreSelected = Movie(dictionary: movieDictionary as! [String : Any])
@@ -202,8 +190,7 @@ class GenreController: UIViewController, UIScrollViewDelegate {
                 }catch {
                     
                 }
-            }
-            task.resume()
+            }.resume()
         }
     }
     
@@ -231,8 +218,8 @@ extension GenreController: UICollectionViewDataSource, UICollectionViewDelegateF
                 let urlString = imageFetchUrlHeader + post_path
                 cell.moviePostImageView.loadImageUsingCacheWithUrlString(urlString: urlString)
                 adjustLabelToFitTitle(title: sortedMovies![indexPath.item].original_title!, cell: cell)
-                cell.tag = indexPath.item
-                cell.isUserInteractionEnabled = true
+                cell.tag                        = indexPath.item
+                cell.isUserInteractionEnabled   = true
                 cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handlePostClicked)))
             }
         }
@@ -249,8 +236,8 @@ extension GenreController: UICollectionViewDataSource, UICollectionViewDelegateF
         if segue.identifier == "openDetailPageFromGenreController" {
             let nav = segue.destination as! UINavigationController
             if let movieDetailVC = nav.topViewController as? MovieDetailViewController {
-                movieDetailVC.movie = selectedMovie
-                selectedMovie = nil
+                movieDetailVC.movie     = selectedMovie
+                selectedMovie           = nil
             }
         }
     }
