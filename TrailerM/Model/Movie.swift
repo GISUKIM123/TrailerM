@@ -9,20 +9,21 @@
 import UIKit
 
 class Movie: NSObject {
-    var adult           : Bool?
-    var id              : Int?
-    var original_title  : String?
-    var popularity      : Double?
-    var video           : Bool?
-    var poster_path    : String?
-    var backdrop_path   : String?
-    var belongs_to_collection : [String : Any]?
-    var genres : [String: Any]?
-    var imdb_id : String?
-    var overview : String?
-    var release_date : String?
-    var runtime : Double?
-    var vote_average : Double?
+    var adult                   : Bool?
+    var id                      : Int?
+    var original_title          : String?
+    var popularity              : Double?
+    var video                   : Bool?
+    var poster_path             : String?
+    var backdrop_path           : String?
+    var belongs_to_collection   : [String : Any]?
+    var genre                   : Genre?
+    var imdb_id                 : String?
+    var overview                : String?
+    var release_date            : String?
+    var runtime                 : Double?
+    var vote_average            : Double?
+    var video_key               : String?
     
     override init() {
         
@@ -53,9 +54,12 @@ class Movie: NSObject {
         if dictionary["belongs_to_collection"] != nil {
             belongs_to_collection = dictionary["belongs_to_collection"] as? [String : Any]
         }
-        if dictionary["genres"] != nil {
-            genres = dictionary["genres"] as? [String : Any]
+        if dictionary["genres"] != nil {   
+            if let genreData = dictionary["genres"] as? [AnyObject], genreData.count != 0 {
+                genre = Genre(dictionary: genreData[0] as! [String : Any])
+            }
         }
+        
         if dictionary["imdb_id"] != nil {
             imdb_id = dictionary["imdb_id"] as? String
         }
@@ -65,6 +69,7 @@ class Movie: NSObject {
         if dictionary["release_date"] != nil {
             release_date = dictionary["release_date"] as? String
         }
+        
         if dictionary["runtime"] != nil {
             runtime = dictionary["runtime"] as? Double
         }

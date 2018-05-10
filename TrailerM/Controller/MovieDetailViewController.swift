@@ -8,6 +8,8 @@
 
 import UIKit
 
+let videoUrlHeader = "https://www.youtube.com/embed/"
+
 class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
     
     @IBOutlet var containerView: UIView!
@@ -21,19 +23,31 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
     @IBOutlet var videoTrailView: UIImageView!
     
     var movie           : Movie?
-    var videoView       : VideoView?
     var videoLauncher   : VideoLauncher?
     var blackView       : UIView?
+    var webView         : UIWebView?
     
     @IBAction func playTrailer(_ sender: Any) {
-        videoLauncher = VideoLauncher()
-        videoView = VideoView()
-       setupBlackView(blackView: &blackView)
-        blackView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDismiss)))
-       videoLauncher?.blackView = blackView
+        self.videoLauncher = VideoLauncher()
+        self.setupBlackView(blackView: &self.blackView)
+        self.blackView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.handleDismiss)))
+        self.videoLauncher?.blackView = self.blackView
+        self.webView = UIWebView()
+        self.webView?.backgroundColor = .black
+        self.webView?.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(self.handleSwipe)))
+        self.videoLauncher?.setupVideoLauncher(webView: self.webView!)
         
-        videoView?.controlContainer.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handleSwipe)))
-        videoLauncher?.setupVideoLauncher(videoView: videoView!)
+        fetchVideUrlWith((movie?.id)!, movie: movie!) {
+            DispatchQueue.main.async {
+                let urlString = videoUrlHeader + (self.movie?.video_key)!
+                if let url = URL(string: urlString) {
+                    let request = URLRequest(url: url)
+                    self.webView?.loadRequest(request)
+                    self.webView?.subviews[0].isUserInteractionEnabled = true
+                    self.webView?.subviews[0].addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(self.handleSwipe)))
+                }
+            }
+        }
     }
     
     @objc func handleDismiss() {
@@ -42,8 +56,6 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
         }) { (completed) in
             if completed {
                 self.videoLauncher = nil
-                self.videoView?.player?.pause()
-                self.videoView?.playerLayer?.removeFromSuperlayer()
             }
         }
     }
@@ -52,19 +64,20 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
     
     @objc func handleSwipe(gesture: UIPanGestureRecognizer) {
         if gesture.state == .began || gesture.state == .changed {
-            location = gesture.translation(in: videoView)
-            trackVideoViewMoving(location: location, videoView: self.videoView!, videoLauncher: self.videoLauncher!)
+            location = gesture.translation(in: webView)
+            trackVideoViewMoving(location: location, videoView: self.webView!, videoLauncher: self.videoLauncher!)
         }
         
         if gesture.state == .ended {
             if location.y < -180 || location.y > 180 {
                 // dismiss video launcher
-                dismissVideoView(videoView: videoView!, videoLauncher: videoLauncher!)
+                self.blackView?.removeFromSuperview()
+                self.webView?.removeFromSuperview()
                 videoLauncher = nil
             } else {
                 // return original position
                 UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-                    self.fadeBackToOriginal(videoView: self.videoView!, videoLauncher: self.videoLauncher!)
+                    self.fadeBackToOriginal(videoView: self.webView!, videoLauncher: self.videoLauncher!)
                 }, completion: nil)
             }
         }
@@ -77,7 +90,6 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
     
     @IBOutlet var backButton: UIButton!
     override func viewWillAppear(_ animated: Bool) {
-//        colorNavigationBar(barColor: .clear, tintColor: .orange)
         navigationController?.isNavigationBarHidden = true
         UIApplication.shared.statusBarStyle = .lightContent
         view.backgroundColor = UIColor.init(red: 198/255, green: 226/255, blue: 255/255, alpha: 1)
@@ -88,10 +100,10 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
         UIApplication.shared.statusBarStyle = .default
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "Detail"
+        
         setupContainer()
         setupDescrition()
         setupContentContainerView()
@@ -104,12 +116,18 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
     
     func setupVideoTrailer() {
         // TODO: make an extra obj contains of view having AVFoundation video player
-        guard let post_path = movie?.poster_path else {
-            return
+        if let post_path = movie?.belongs_to_collection {
+            if let belongs_to_collection = post_path["poster_path"] as? String {
+                let urlString = "https://image.tmdb.org/t/p/w500" + belongs_to_collection
+                videoTrailView.loadImageUsingCacheWithUrlString(urlString: urlString)
+            }
+        } else {
+            if let post_path = movie?.backdrop_path {
+                let urlString = "https://image.tmdb.org/t/p/w500" + post_path
+                videoTrailView.loadImageUsingCacheWithUrlString(urlString: urlString)
+            }
         }
         
-        let urlString = "https://image.tmdb.org/t/p/w500" + post_path
-        videoTrailView.loadImageUsingCacheWithUrlString(urlString: urlString)
         videoTrailView.contentMode = .scaleToFill
     }
     
@@ -143,9 +161,9 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
         scrollView.contentSize.height = contentView.frame.height + extensiveHeight
     }
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        print(123123)
-    }
+//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        print(123123)
+//    }
     
     func setupDateLabel() {
         guard let date = movie?.release_date else {
@@ -179,15 +197,11 @@ class MovieDetailViewController: UIViewController, UIScrollViewDelegate {
     func setupContainer() {
         // TODO: assign background image as a movie post
         let backgroundImage = UIImageView(frame: UIScreen.main.bounds)
-        if let belongs_to_collection = movie?.belongs_to_collection {
-            if belongs_to_collection["poster_path"] != nil {
-                if let poster_path = belongs_to_collection["poster_path"] as? String {
-                    let urlString = "https://image.tmdb.org/t/p/w500\(poster_path)"
-                    backgroundImage.loadImageUsingCacheWithUrlString(urlString: urlString)
-                    backgroundImage.contentMode = .scaleToFill
-                    containerView.insertSubview(backgroundImage, at: 0)
-                }
-            }
+        if let poster_path = movie?.poster_path {
+            let urlString = "https://image.tmdb.org/t/p/w500\(poster_path)"
+            backgroundImage.loadImageUsingCacheWithUrlString(urlString: urlString)
+            backgroundImage.contentMode = .scaleToFill
+            containerView.insertSubview(backgroundImage, at: 0)
         }
     }
     

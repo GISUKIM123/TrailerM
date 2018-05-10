@@ -10,7 +10,7 @@ import UIKit
 
 class GenreCell: UICollectionViewCell {
    
-    @IBOutlet var moviePostImageView: UIImageView!
+    @IBOutlet var moviePostImageView: TrailerCellImageView!
     @IBOutlet var moiveTitleLabel: UILabel!
     
 }

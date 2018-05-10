@@ -24,5 +24,5 @@ class TrailerCell: UICollectionViewCell {
     var movie: Movie?
     
     @IBOutlet var movieTitleLabel: UILabel!
-    @IBOutlet var moviePostImageVIew: UIImageView!
+    @IBOutlet var moviePostImageVIew: TrailerCellImageView!
 }

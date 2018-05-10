@@ -13,5 +13,9 @@ class MoviePostCell: UICollectionViewCell {
     @IBOutlet var moviePostDateLabel: UILabel!
     @IBOutlet var moviePostDescriptionTextView: UITextView!
     @IBOutlet var moviePostTiltleLabel: UILabel!
-    @IBOutlet var moviePostImageView: UIImageView!
+    @IBOutlet var moviePostImageView: TrailerCellImageView!
+    
+    @IBOutlet var calendarMoiveImageView: UIImageView!
+    @IBOutlet var calendarMovieTitle: UILabel!
+    @IBOutlet var calendarMovieDescriptionView: UITextView!
 }

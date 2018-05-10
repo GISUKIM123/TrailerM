@@ -11,12 +11,16 @@ import UIKit
 let imageCache = NSCache<NSString, UIImage>()
 
 extension UIImageView {
-    func loadImageUsingCacheWithUrlString(urlString: String){
+    func loadImageUsingCacheWithUrlString(urlString: String) {
         //no flshing image for the next list
         self.image = nil
         
         //check cache for image first
         if let cachedImage = imageCache.object(forKey: (urlString as NSString)){
+            if let trailerCellImageView = self as? TrailerCellImageView {
+                trailerCellImageView.activityIndicatior.stopAnimating()
+                trailerCellImageView.activityIndicatior.removeFromSuperview()
+            }
             self.image = cachedImage
             return
         }
@@ -35,10 +39,13 @@ extension UIImageView {
             DispatchQueue.main.async {
                 if let downloadedImage = UIImage(data: data!), let compressedImageData = UIImageJPEGRepresentation(downloadedImage, 0.1), let compressedImage = UIImage(data: compressedImageData) {
                     imageCache.setObject( compressedImage, forKey: (urlString as NSString))
-                    self.image = compressedImage
+                   
                     if let trailerCellImageView = self as? TrailerCellImageView {
                         trailerCellImageView.activityIndicatior.stopAnimating()
+                        trailerCellImageView.activityIndicatior.removeFromSuperview()
                     }
+                    
+                    self.image = compressedImage
                 }
             }
         }
@@ -47,7 +54,68 @@ extension UIImageView {
 }
 
 extension UIViewController {
-    
+    func fetchVideUrlWith(_ movieId: Int, movie: Movie, completion: @escaping () -> Void) {
+        let urlString = "https://api.themoviedb.org/3/movie/\(movieId)/videos?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US"
+        if let url = URL(string: urlString) {
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpMethod = "GET"
+            
+            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+                if error != nil {
+                    return
+                }
+                
+                do {
+                    let dictionary = try JSONSerialization.jsonObject(with: data!, options: []) as? [String : Any]
+                    if let results = dictionary!["results"] as? [AnyObject] {
+                        for video in results {
+                            if let videoObj = video as? [String : Any] {
+                                movie.video_key = videoObj["key"] as? String
+                                break
+                            }
+                        }
+                        
+                        completion()
+                    }
+                } catch {
+                    
+                }
+            })
+            task.resume()
+        }
+        
+    }
+    func fetchMovieWith(_ id: Int, completion: @escaping (Movie) -> Void) {
+        if let url = URL(string: "https://api.themoviedb.org/3/movie/\(id)?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US") {
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.setValue("application/json", forHTTPHeaderField: "Content_Type")
+            
+            let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+                if error != nil {
+                    return
+                }
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data!, options: [])
+                    let movie = Movie(dictionary: (json as? [String: Any])!)
+                    completion(movie)
+                } catch {
+                    
+                }
+            }
+            
+            task.resume()
+        }
+    }
+    func sortByReleaseDay(movies: inout [Movie]) {
+        movies.sort(by: { (movie1, movie2) -> Bool in
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            
+            return dateFormatter.date(from: movie1.release_date!)! > dateFormatter.date(from: movie2.release_date!)!
+        })
+    }
     func formatDate(dateString: String) -> String {
         let dateFormat = DateFormatter()
         dateFormat.dateFormat = "yyyy-MM-dd"
@@ -114,6 +182,11 @@ extension UIViewController {
             let bottomBorder = setupFrameAndColorOnBorder(color: UIColor.init(red: 215/255, green: 191/255, blue: 31/255, alpha: 1).cgColor, rect: CGRect(x: 30.0, y: cell.frame.size.height - 1, width: cell.frame.size.width - 60, height: 1.0), layer: CALayer())
             cell.layer.addSublayer(bottomBorder)
         }
+        
+        if let cell = cell as? UITableViewCell {
+            let bottomBorder = setupFrameAndColorOnBorder(color: UIColor.init(red: 215/255, green: 191/255, blue: 31/255, alpha: 1).cgColor, rect: CGRect(x: 30.0, y: cell.frame.size.height - 1, width: cell.frame.size.width - 60, height: 1.0), layer: CALayer())
+            cell.layer.addSublayer(bottomBorder)
+        }
     }
     
     func setupFrameAndColorOnBorder(color: CGColor, rect: CGRect, layer: CALayer) -> CALayer {
@@ -131,18 +204,39 @@ extension UIViewController {
             cell.movieTitleLabel.numberOfLines = numberOfLine
             cell.movieTitleLabel.text = title
             cell.movieTitleLabel.sizeToFit()
-            cell.sizeToFit()
         } else if let cell = cell as? GenreCell {
             let numberOfLine = Int(size.width / (cell.frame.width * 0.8 - 8)) + 1
             cell.moiveTitleLabel.numberOfLines = numberOfLine
-            cell.moiveTitleLabel.sizeToFit()
             cell.moiveTitleLabel.text = title
+            cell.moiveTitleLabel.sizeToFit()
+        } else if let cell = cell as? MoviePostCell {
+            let numberOfLine = Int(size.width / (cell.frame.width * 0.8 - 8)) + 1
+            cell.moviePostTiltleLabel.numberOfLines = numberOfLine
+            cell.moviePostTiltleLabel.text = title
+            cell.moviePostTiltleLabel.sizeToFit()
+        }
+        
+    }
+    
+    func setupActivityIndicator<T>(cell: T) {
+        if let trailerCellImageView = (cell as? TrailerCell)?.moviePostImageVIew {
+            trailerCellImageView.addSubview(trailerCellImageView.activityIndicatior)
+            trailerCellImageView.activityIndicatior.centerYAnchor.constraint(equalTo: trailerCellImageView.centerYAnchor).isActive = true
+            trailerCellImageView.activityIndicatior.centerXAnchor.constraint(equalTo: trailerCellImageView.centerXAnchor).isActive = true
+        } else if let genreCellImageView = (cell as? GenreCell)?.moviePostImageView  {
+            genreCellImageView.addSubview(genreCellImageView.activityIndicatior)
+            genreCellImageView.activityIndicatior.centerYAnchor.constraint(equalTo: genreCellImageView.centerYAnchor).isActive = true
+            genreCellImageView.activityIndicatior.centerXAnchor.constraint(equalTo: genreCellImageView.centerXAnchor).isActive = true
+        } else if let movieCollectionViewImageView = (cell as? MoviePostCell)?.moviePostImageView {
+            movieCollectionViewImageView.addSubview(movieCollectionViewImageView.activityIndicatior)
+            movieCollectionViewImageView.activityIndicatior.centerYAnchor.constraint(equalTo: movieCollectionViewImageView.centerYAnchor).isActive = true
+            movieCollectionViewImageView.activityIndicatior.centerXAnchor.constraint(equalTo: movieCollectionViewImageView.centerXAnchor).isActive = true
         }
     }
     
     // tracking on a position of video view 
     
-    func trackVideoViewMoving(location: CGPoint, videoView: VideoView, videoLauncher: VideoLauncher) {
+    func trackVideoViewMoving(location: CGPoint, videoView: UIWebView, videoLauncher: VideoLauncher) {
         let changedX =  location.x + view.frame.width / 2
         let changedY =  location.y + view.frame.height / 2
         videoView.center = CGPoint(x: changedX, y: changedY)
@@ -150,16 +244,10 @@ extension UIViewController {
         videoLauncher.blackView?.alpha -= 0.003
     }
     
-    func fadeBackToOriginal(videoView: VideoView, videoLauncher: VideoLauncher) {
+    func fadeBackToOriginal(videoView: UIWebView, videoLauncher: VideoLauncher) {
         videoView.center = self.view.center
         videoLauncher.blackView?.alpha = 1
         videoView.alpha = 1
-    }
-    
-    func dismissVideoView(videoView: VideoView, videoLauncher: VideoLauncher) {
-        videoView.player?.pause()
-        videoView.playerLayer?.removeFromSuperlayer()
-        videoLauncher.blackView?.removeFromSuperview()
     }
 }
 

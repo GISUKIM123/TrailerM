@@ -41,9 +41,9 @@
                                             <rect key="frame" x="0.0" y="0.0" width="143" height="200"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ery-G9-SHD">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ery-G9-SHD" customClass="TrailerCellImageView" customModule="TrailerM" customModuleProvider="target">
                                                     <rect key="frame" x="14.5" y="4" width="114" height="140"/>
-                                                    <color key="backgroundColor" red="0.79026669260000004" green="0.78835613402831972" blue="0.24334257947943402" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                    <color key="backgroundColor" red="1" green="0.6778479811" blue="0.19196756409999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 </imageView>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PSj-51-T3L">
                                                     <rect key="frame" x="14.5" y="156" width="114" height="40"/>
@@ -85,23 +85,10 @@
                     </view>
                     <navigationItem key="navigationItem" id="2dk-xy-vFQ">
                         <nil key="title"/>
-                        <segmentedControl key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="Ank-DN-UaX">
-                            <rect key="frame" x="51.5" y="7" width="272" height="30"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            <segments>
-                                <segment title="" image="Favorite"/>
-                                <segment title="" image="popularIcon"/>
-                                <segment title="" image="recommendIcon"/>
-                            </segments>
-                            <color key="tintColor" red="1" green="0.6778479811" blue="0.19196756409999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                            <connections>
-                                <action selector="handleSegmentChanged:" destination="tMN-lh-vtP" eventType="valueChanged" id="262-n0-bBq"/>
-                            </connections>
-                        </segmentedControl>
                     </navigationItem>
                     <connections>
                         <outlet property="genreCollectionView" destination="0qs-5b-QgC" id="b3G-l2-96X"/>
-                        <outlet property="segmentBar" destination="Ank-DN-UaX" id="4LP-fW-wZM"/>
+                        <segue destination="oum-VD-drv" kind="presentation" identifier="openDetailPageFromGenreController" id="Y3y-b8-YUb"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UWb-3K-2Pu" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -280,9 +267,9 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="146"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="CjX-nC-pYd">
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="CjX-nC-pYd" customClass="TrailerCellImageView" customModule="TrailerM" customModuleProvider="target">
                                             <rect key="frame" x="8" y="17.5" width="112.5" height="112.5"/>
-                                            <color key="backgroundColor" red="0.91921168565750122" green="0.24644433319599585" blue="0.20757692135917152" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                            <color key="backgroundColor" red="1" green="0.6778479811" blue="0.19196756409999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         </imageView>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transformer" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pb9-is-6In">
                                             <rect key="frame" x="125" y="17" width="169" height="40"/>
@@ -548,13 +535,112 @@
                     <view key="view" contentMode="scaleToFill" id="uL7-PW-HRv">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="zFu-qO-Gvq">
+                                <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="5ao-DD-obf">
+                                    <size key="itemSize" width="375" height="145"/>
+                                    <size key="headerReferenceSize" width="50" height="50"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <imageView key="backgroundView" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="IUi-Fc-wbz">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                </imageView>
+                                <cells>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="calendarMoviePostCell" id="GI1-hk-9UD" customClass="MoviePostCell" customModule="TrailerM" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="50" width="375" height="145"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="145"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="1iA-hP-8da">
+                                                    <rect key="frame" x="8" y="7" width="112.5" height="130.5"/>
+                                                    <color key="backgroundColor" red="1" green="0.6778479811" blue="0.19196756409999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                </imageView>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fCW-k3-UuS">
+                                                    <rect key="frame" x="136.5" y="7" width="187.5" height="39"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TV5-WP-jlZ">
+                                                    <rect key="frame" x="136.5" y="46" width="187.5" height="91.5"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                </textView>
+                                            </subviews>
+                                        </view>
+                                        <constraints>
+                                            <constraint firstItem="TV5-WP-jlZ" firstAttribute="width" secondItem="fCW-k3-UuS" secondAttribute="width" id="1c3-3L-sYD"/>
+                                            <constraint firstItem="TV5-WP-jlZ" firstAttribute="leading" secondItem="1iA-hP-8da" secondAttribute="trailing" constant="16" id="ErZ-V0-gGf"/>
+                                            <constraint firstItem="fCW-k3-UuS" firstAttribute="top" secondItem="1iA-hP-8da" secondAttribute="top" id="G2q-8h-deO"/>
+                                            <constraint firstItem="1iA-hP-8da" firstAttribute="height" secondItem="GI1-hk-9UD" secondAttribute="height" multiplier="0.9" id="PaR-Il-ThA"/>
+                                            <constraint firstItem="TV5-WP-jlZ" firstAttribute="height" secondItem="1iA-hP-8da" secondAttribute="height" multiplier="0.7" id="VGX-gV-oF9"/>
+                                            <constraint firstItem="1iA-hP-8da" firstAttribute="leading" secondItem="GI1-hk-9UD" secondAttribute="leading" constant="8" id="Yz6-yr-10U"/>
+                                            <constraint firstItem="1iA-hP-8da" firstAttribute="width" secondItem="GI1-hk-9UD" secondAttribute="width" multiplier="0.3" id="hQ8-Oi-4Wg"/>
+                                            <constraint firstItem="fCW-k3-UuS" firstAttribute="width" secondItem="GI1-hk-9UD" secondAttribute="width" multiplier="0.5" id="kdq-oQ-wjB"/>
+                                            <constraint firstItem="1iA-hP-8da" firstAttribute="centerY" secondItem="GI1-hk-9UD" secondAttribute="centerY" id="mjW-dJ-2kJ"/>
+                                            <constraint firstItem="fCW-k3-UuS" firstAttribute="height" secondItem="1iA-hP-8da" secondAttribute="height" multiplier="0.3" id="pdK-ht-ARu"/>
+                                            <constraint firstItem="TV5-WP-jlZ" firstAttribute="top" secondItem="fCW-k3-UuS" secondAttribute="bottom" id="rUJ-dl-KeZ"/>
+                                            <constraint firstItem="fCW-k3-UuS" firstAttribute="leading" secondItem="1iA-hP-8da" secondAttribute="trailing" constant="16" id="tYb-Rb-9x7"/>
+                                        </constraints>
+                                        <connections>
+                                            <outlet property="calendarMoiveImageView" destination="1iA-hP-8da" id="Am7-VM-dKb"/>
+                                            <outlet property="calendarMovieDescriptionView" destination="TV5-WP-jlZ" id="IH9-WR-Pz0"/>
+                                            <outlet property="calendarMovieTitle" destination="fCW-k3-UuS" id="tW1-PF-c4E"/>
+                                        </connections>
+                                    </collectionViewCell>
+                                </cells>
+                                <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" reuseIdentifier="calendarHeaderCell" id="mpq-rX-V1x" customClass="TrailerHeaderCell" customModule="TrailerM" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3uB-Pf-ri4">
+                                            <rect key="frame" x="16" y="5.5" width="187.5" height="40"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="1" green="0.6778479811" blue="0.19196756409999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="3uB-Pf-ri4" firstAttribute="height" secondItem="mpq-rX-V1x" secondAttribute="height" multiplier="0.8" id="ILX-FD-u1g"/>
+                                        <constraint firstItem="3uB-Pf-ri4" firstAttribute="width" secondItem="mpq-rX-V1x" secondAttribute="width" multiplier="0.5" id="Wac-h1-YA3"/>
+                                        <constraint firstItem="3uB-Pf-ri4" firstAttribute="leading" secondItem="mpq-rX-V1x" secondAttribute="leading" constant="16" id="fYP-Nl-gdo"/>
+                                        <constraint firstItem="3uB-Pf-ri4" firstAttribute="centerY" secondItem="mpq-rX-V1x" secondAttribute="centerY" id="xnG-Wu-XQc"/>
+                                    </constraints>
+                                    <connections>
+                                        <outlet property="calendarMovieDateLabel" destination="3uB-Pf-ri4" id="YnR-nM-tka"/>
+                                    </connections>
+                                </collectionReusableView>
+                                <connections>
+                                    <outlet property="dataSource" destination="d4K-0x-AZM" id="Ug8-ls-ors"/>
+                                    <outlet property="delegate" destination="d4K-0x-AZM" id="6rP-xD-Jo2"/>
+                                </connections>
+                            </collectionView>
+                        </subviews>
                         <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="zFu-qO-Gvq" secondAttribute="trailing" id="P6Q-L8-bWZ"/>
+                            <constraint firstAttribute="bottom" secondItem="zFu-qO-Gvq" secondAttribute="bottom" id="UK5-09-eEX"/>
+                            <constraint firstItem="zFu-qO-Gvq" firstAttribute="leading" secondItem="uL7-PW-HRv" secondAttribute="leading" id="lD8-zw-pBK"/>
+                            <constraint firstItem="zFu-qO-Gvq" firstAttribute="top" secondItem="dqP-Mv-Yrz" secondAttribute="bottom" id="sxg-2G-vYp"/>
+                        </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="Calendar" image="calendar" id="ga6-rS-OD8"/>
+                    <connections>
+                        <outlet property="calendarCollectionView" destination="zFu-qO-Gvq" id="hFl-Wg-l0J"/>
+                        <segue destination="oum-VD-drv" kind="presentation" identifier="openDetailFromCalendarPage" id="DLy-co-o9l"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="s9o-S2-jG4" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="217" y="1040"/>
+            <point key="canvasLocation" x="216.80000000000001" y="1039.4302848575712"/>
         </scene>
         <!--Settings-->
         <scene sceneID="bmZ-Xd-fQI">
@@ -930,19 +1016,16 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Favorite" width="24" height="24"/>
         <image name="backButton" width="32" height="32"/>
         <image name="calendar" width="24" height="24"/>
         <image name="favorites" width="24" height="24"/>
         <image name="playButton" width="64" height="64"/>
-        <image name="popularIcon" width="24" height="24"/>
-        <image name="recommendIcon" width="24" height="24"/>
         <image name="rightArrowButton" width="32" height="32"/>
         <image name="settings" width="32" height="32"/>
         <image name="settings_rightArrow" width="32" height="32"/>
         <image name="video-camera" width="24" height="24"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="K30-na-v1l"/>
+        <segue reference="xri-Cy-NW1"/>
     </inferredMetricsTieBreakers>
 </document>

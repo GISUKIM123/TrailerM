@@ -12,4 +12,6 @@ class TrailerHeaderCell: UICollectionReusableView {
     
     @IBOutlet var headerButton: UIButton!
     @IBOutlet var headerNameLabel: UILabel!
+    
+    @IBOutlet var calendarMovieDateLabel: UILabel!
 }

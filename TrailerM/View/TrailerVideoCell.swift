@@ -10,6 +10,8 @@ import UIKit
 
 class TrailerVideoCell: UICollectionViewCell {
     
+    var movie : Movie?
+    
     @IBOutlet var trailerVideoDescription: UITextView!
     
     @IBOutlet var trailerVideoTitle: UILabel!
