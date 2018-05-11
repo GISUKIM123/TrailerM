@@ -21,6 +21,8 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
     // being used to detect location of user touch on a screen
     var location = CGPoint(x: 0, y: 0)
     
+    var activityIndicator : UIActivityIndicatorView?
+    
     weak var trailerController: TrailerController? {
         didSet {
             self.movies = TrailerController.movies
@@ -71,11 +73,12 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
 
 // video launcher
 
-extension TrailerVideosController {
+extension TrailerVideosController: UIWebViewDelegate {
     
     @objc func showVideoTrailer(gesture: UITapGestureRecognizer) {
         if let cell = gesture.view as? TrailerVideoCell {
             setupVideoLauncher()
+            setupActivityIndicatorToWebView()
             fetchVideUrlWith((cell.movie?.id)!, movie: cell.movie!) {
                 DispatchQueue.main.async {
                     if let video_key = cell.movie?.video_key {
@@ -89,6 +92,21 @@ extension TrailerVideosController {
                 }
             }
         }
+    }
+    
+    func setupActivityIndicatorToWebView() {
+        webView?.delegate = self
+        activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+        activityIndicator?.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator?.startAnimating()
+        webView?.addSubview(activityIndicator!)
+        activityIndicator?.centerXAnchor.constraint(equalTo: (webView?.centerXAnchor)!).isActive = true
+        activityIndicator?.centerYAnchor.constraint(equalTo: (webView?.centerYAnchor)!).isActive = true
+    }
+    
+    func webViewDidStartLoad(_ webView: UIWebView) {
+        activityIndicator?.stopAnimating()
+        activityIndicator?.removeFromSuperview()
     }
     
     func setupVideoLauncher() {

@@ -99,7 +99,7 @@ class TrailerController: UIViewController {
     func setupButtonsOnNavigationBar() {
         let leftButton = createNavigationButton()
         leftButton.addTarget(self, action: #selector(openTrailCollectionView), for: .touchUpInside)
-        leftButton.setTitle("Trailers", for: .normal)
+        leftButton.setAttributedTitle(NSAttributedString(string: "Trailers", attributes: [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 17), NSAttributedStringKey.foregroundColor:UIColor.orange]), for: .normal)
         leftButton.layer.borderColor = UIColor.orange.cgColor
         leftButton.layer.borderWidth = 2
         leftButton.frame = CGRect(x: 0, y: 430, width: 70, height: 40)
@@ -258,6 +258,7 @@ extension TrailerController: UICollectionViewDataSource, UICollectionViewDelegat
         } else if indexPath.section == 2 {
             headerCell.headerNameLabel.text = "Upcoming Movies"
         }
+        
         
         return headerCell
     }

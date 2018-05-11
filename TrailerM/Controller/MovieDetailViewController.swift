@@ -10,7 +10,7 @@ import UIKit
 
 let videoUrlHeader = "https://www.youtube.com/embed/"
 
-class MovieDetailViewController: UIViewController {
+class MovieDetailViewController: UIViewController, UIWebViewDelegate {
     
     @IBOutlet var containerView: UIView!
     @IBOutlet var scrollView: UIScrollView!
@@ -27,9 +27,12 @@ class MovieDetailViewController: UIViewController {
     var videoLauncher   : VideoLauncher?
     var blackView       : UIView?
     var webView         : UIWebView?
+    var activityIndicator : UIActivityIndicatorView?
     
     @IBAction func playTrailer(_ sender: Any) {
         setupVideoLauncher()
+        setupActivityIndicatorToWebView()
+        
         fetchVideUrlWith((movie?.id)!, movie: movie!) {
             DispatchQueue.main.async {
                 let urlString = videoUrlHeader + (self.movie?.video_key)!
@@ -40,6 +43,21 @@ class MovieDetailViewController: UIViewController {
                 }
             }
         }
+    }
+    
+    func setupActivityIndicatorToWebView() {
+        webView?.delegate = self
+        activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+        activityIndicator?.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator?.startAnimating()
+        webView?.addSubview(activityIndicator!)
+        activityIndicator?.centerXAnchor.constraint(equalTo: (webView?.centerXAnchor)!).isActive = true
+        activityIndicator?.centerYAnchor.constraint(equalTo: (webView?.centerYAnchor)!).isActive = true
+    }
+    
+    func webViewDidStartLoad(_ webView: UIWebView) {
+        activityIndicator?.stopAnimating()
+        activityIndicator?.removeFromSuperview()
     }
     
     override func viewWillAppear(_ animated: Bool) {
