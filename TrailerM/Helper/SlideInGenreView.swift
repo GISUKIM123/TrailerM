@@ -50,11 +50,11 @@ class GenreView: UIView {
     
     let genreLabel : UILabel = {
         let label = UILabel()
-        label.text = "Genres"
-        label.textAlignment = .center
-        label.backgroundColor = .white
-        label.textColor = .orange
-        label.font = UIFont(name: "AmericanTypewriter-Bold", size: 22)
+        label.text                  = "Genres"
+        label.textAlignment         = .center
+        label.backgroundColor       = .white
+        label.textColor             = .orange
+        label.font                  = UIFont(name: "AmericanTypewriter-Bold", size: 22)
         
         return label
     }()
