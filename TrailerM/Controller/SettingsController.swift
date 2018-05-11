@@ -126,6 +126,7 @@ extension SettingsController: UICollectionViewDataSource, UICollectionViewDelega
 
 
 // setting for loation
+
 extension SettingsController {
     @objc func handleDismissView() {
         self.containerView?.backgroundColor = .clear

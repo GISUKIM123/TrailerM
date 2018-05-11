@@ -18,6 +18,8 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
     var blackView       : UIView?
     
     var webView         : UIWebView?
+    // being used to detect location of user touch on a screen
+    var location = CGPoint(x: 0, y: 0)
     
     weak var trailerController: TrailerController? {
         didSet {
@@ -49,12 +51,11 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
         if cell.movie == nil {
             cell.movie = movies![indexPath.item]
         }
-        cell.trailerVideoImageVIew.alpha = 0.8
         if let post_path = cell.movie?.poster_path {
             let urlString = imageFetchUrlHeader + post_path
             cell.trailerVideoImageVIew.loadImageUsingCacheWithUrlString(urlString: urlString)
         }
-        
+        cell.trailerVideoImageVIew.alpha    = 0.8
         cell.trailerVideoTitle.text         = cell.movie?.original_title
         cell.trailerVideoDescription.text   = cell.movie?.overview
         cell.dateLabel.text                 = formatDate(dateString: (cell.movie?.release_date!)!)
@@ -62,6 +63,15 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
         cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showVideoTrailer)))
         
     }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.width, height: view.frame.height / 4)
+    }
+}
+
+// video launcher
+
+extension TrailerVideosController {
     
     @objc func showVideoTrailer(gesture: UITapGestureRecognizer) {
         if let cell = gesture.view as? TrailerVideoCell {
@@ -73,7 +83,6 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
                         if let url = URL(string: urlString) {
                             let request = URLRequest(url: url)
                             self.webView?.loadRequest(request)
-                            self.webView?.subviews[0].isUserInteractionEnabled = true
                             self.webView?.subviews[0].addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(self.handleSwipe)))
                         }
                     }
@@ -88,6 +97,7 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
         videoLauncher                   = VideoLauncher()
         videoLauncher?.blackView        = blackView
         webView                         = UIWebView()
+        webView?.backgroundColor        = .black
         videoLauncher?.setupVideoLauncher(webView: webView!)
     }
     
@@ -100,8 +110,6 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
             }
         }
     }
-    
-    var location = CGPoint(x: 0, y: 0)
     
     @objc func handleSwipe(gesture: UIPanGestureRecognizer) {
         if gesture.state == .began || gesture.state == .changed {
@@ -123,8 +131,11 @@ class TrailerVideosController: UICollectionViewController, UICollectionViewDeleg
             }
         }
     }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: view.frame.height / 4)
-    }
 }
+
+
+
+
+
+
+

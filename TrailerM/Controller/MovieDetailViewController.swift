@@ -21,6 +21,7 @@ class MovieDetailViewController: UIViewController {
     @IBOutlet var movietitle: UILabel!
     @IBOutlet var movieDescription: UITextView!
     @IBOutlet var videoTrailView: UIImageView!
+    @IBOutlet var backButton: UIButton!
     
     var movie           : Movie?
     var videoLauncher   : VideoLauncher?
@@ -35,11 +36,35 @@ class MovieDetailViewController: UIViewController {
                 if let url = URL(string: urlString) {
                     let request = URLRequest(url: url)
                     self.webView?.loadRequest(request)
-                    self.webView?.subviews[0].isUserInteractionEnabled = true
                     self.webView?.subviews[0].addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(self.handleSwipe)))
                 }
             }
         }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        navigationController?.isNavigationBarHidden = true
+        UIApplication.shared.statusBarStyle         = .lightContent
+        view.backgroundColor                        = UIColor.init(red: 198/255, green: 226/255, blue: 255/255, alpha: 1)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        navigationController?.isNavigationBarHidden     = false
+        UIApplication.shared.statusBarStyle             = .default
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationItem.title = "Detail"
+        
+        setupContainer()
+        setupDescrition()
+        setupContentContainerView()
+        setupDateLabel()
+        setupVideoLengthLabel()
+        setupRateBar()
+        setupTitle()
+        setupVideoTrailer()
     }
     
     func setupVideoLauncher() {
@@ -89,34 +114,12 @@ class MovieDetailViewController: UIViewController {
     @IBAction func dismissPage(_ sender: Any) {
         dismiss(animated: true, completion: nil)
         _ = navigationController?.popToViewController((navigationController?.viewControllers[0])!, animated: true)
-    }
-    
-    @IBOutlet var backButton: UIButton!
-    override func viewWillAppear(_ animated: Bool) {
-        navigationController?.isNavigationBarHidden = true
-        UIApplication.shared.statusBarStyle     = .lightContent
-        view.backgroundColor                    = UIColor.init(red: 198/255, green: 226/255, blue: 255/255, alpha: 1)
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        navigationController?.isNavigationBarHidden     = false
-        UIApplication.shared.statusBarStyle             = .default
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        navigationItem.title = "Detail"
-        
-        setupContainer()
-        setupDescrition()
-        setupContentContainerView()
-        setupDateLabel()
-        setupVideoLengthLabel()
-        setupRateBar()
-        setupTitle()
-        setupVideoTrailer()
-    }
-    
+    }    
+}
+
+// layout and style components
+
+extension MovieDetailViewController {
     func setupVideoTrailer() {
         // TODO: make an extra obj contains of view having AVFoundation video player
         if let post_path = movie?.belongs_to_collection {
@@ -178,7 +181,6 @@ class MovieDetailViewController: UIViewController {
         }
         
         let legnthString                    = "\(Int(legnth)) mins"
-        
         videoLengthLabel.attributedText     = createAtrributes(text: legnthString, attributes: [NSAttributedStringKey.font: UIFont(name: "AmericanTypewriter-Bold", size: 16) ?? UIFont.boldSystemFont(ofSize: 16), NSAttributedStringKey.foregroundColor: UIColor.init(red: 255/255, green: 173/255, blue: 49/255, alpha: 1)])
     }
     
@@ -208,3 +210,8 @@ class MovieDetailViewController: UIViewController {
         contentView.backgroundColor = UIColor.black.withAlphaComponent(0.9)
     }
 }
+
+
+
+
+

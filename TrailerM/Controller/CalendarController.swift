@@ -98,6 +98,7 @@ extension CalendarController: UICollectionViewDataSource, UICollectionViewDelega
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let headerCell = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: calendarHeaderCell, for: indexPath) as! TrailerHeaderCell
         headerCell.calendarMovieDateLabel.text = formatDate(dateString: moivesSeparatedByDate![indexPath.section][0].release_date!)
+        headerCell.calendarMovieDateLabel.font = UIFont.boldSystemFont(ofSize: 18)
         return headerCell
     }
 }

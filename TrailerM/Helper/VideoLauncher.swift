@@ -213,16 +213,16 @@ class VideoLauncher: NSObject {
             blackView?.frame = CGRect(x: keyWindow.frame.width - 10, y: keyWindow.frame.height - 10, width: 10, height: 10)
             
             let height = keyWindow.frame.width * 9 / 16
-            let videoViewFrame  = CGRect(x: 0, y: (keyWindow.frame.height / 2) - (height / 2), width: keyWindow.frame.width, height: height)
+            let videoViewFrame          = CGRect(x: 0, y: (keyWindow.frame.height / 2) - (height / 2), width: keyWindow.frame.width, height: height)
 
-            webView.frame = videoViewFrame
+            webView.frame               = videoViewFrame
+            webView.isOpaque            = false
             blackView?.addSubview(webView)
-            
 
             keyWindow.addSubview(blackView!)
             
             UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-                self.blackView?.frame = keyWindow.frame
+                self.blackView?.frame   = keyWindow.frame
             }, completion: { (completedAnimation) in
                 // TOOD: after the animation 
             })

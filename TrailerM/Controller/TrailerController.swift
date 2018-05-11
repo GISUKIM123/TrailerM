@@ -32,15 +32,16 @@ class TrailerController: UIViewController {
     
     var topRatedMovies : [Movie] = [Movie]()
     
-    var moviesReleasedLessThanMonth : [Movie] = [Movie]()
-    
+    // movie selected for movie detail page
     var selectedMovie : Movie?
-    
+    // header selected for movie collection page
     var headerSelected : Int?
     
     var imageContentWidthForScrollView : CGFloat = 0.0
     
     var timerForCarousel : Timer?
+    // slight delay to avoid conflicts in updating cells in collectionView
+    var timer : Timer?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,113 +53,40 @@ class TrailerController: UIViewController {
         fetchPopular()
         fetchUpComing()
     }
-
-    private func fetchUpComing() {
-        if let request = createRequest(urlString: "https://api.themoviedb.org/3/movie/upcoming?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1") {
-            URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
-                if error != nil {
-                    return
-                }
-                
-                do {
-                    let dictionary = try JSONSerialization.jsonObject(with: data!, options: []) as? [String : Any]
-                    if let results = dictionary!["results"] as? [AnyObject] {
-                        for movieObj in results {
-                            let movie = Movie(dictionary: (movieObj as? [String: Any])!)
-                            self.upcomingMovies.append(movie)
-                            // fetch runtime from separate API
-                            self.fetchMovieWith(movie.id!) { (movie) in
-                                self.upcomingMovies.first(where: { (element) -> Bool in
-                                    return element.id == movie.id
-                                })?.runtime = movie.runtime
-                            }
-                        }
-                        
-                        DispatchQueue.main.async {
-                            TrailerController.movies += self.upcomingMovies
-                            self.sortByReleaseDay(movies: &TrailerController.movies)
-                            self.attempToReloadCollection()
-                        }
-                    }
-                } catch {
-                    
-                }
-            }).resume()
-        }
-    }
     
-    private func fetchTopRated() {
-        if let request = createRequest(urlString: "https://api.themoviedb.org/3/movie/top_rated?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1") {
-            URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
-                if error != nil {
-                    return
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "openTrailerVideoPage" {
+            // when trailer button is clicked
+            if let trailerVideoVC = segue.destination as? TrailerVideosController {
+                trailerVideoVC.trailerController = self
+            }
+        } else if segue.identifier == "movieDetailSegue" {
+            // when each one of the movie's post it clicked
+            let nav                 = segue.destination as! UINavigationController
+            let movieDetailVC       = nav.topViewController as! MovieDetailViewController
+            movieDetailVC.movie     = selectedMovie
+            selectedMovie           = nil
+        } else if segue.identifier == "openMovieCollectionPage" {
+            // when each one of the section header is clicked
+            if let movieCollectionVC = segue.destination as? MoviesCollectionViewController {
+                if headerSelected == 0 {
+                    movieCollectionVC.navigationItem.title  = "In Theaters"
+                    movieCollectionVC.movies                = topRatedMovies
+                } else if headerSelected == 1 {
+                    movieCollectionVC.navigationItem.title  = "Top box office"
+                    movieCollectionVC.movies                = popularMoviesInBoxOffice
+                } else if headerSelected == 2 {
+                    // when favorite header is clicked
+                    movieCollectionVC.navigationItem.title  = "Upcoming Movies"
+                    movieCollectionVC.movies                = upcomingMovies
                 }
-                
-                do {
-                    let dictionary = try JSONSerialization.jsonObject(with: data!, options: []) as? [String : Any]
-                    if let results = dictionary!["results"] as? [AnyObject] {
-                        for movieObj in results {
-                            let movie = Movie(dictionary: movieObj as! [String : Any])
-                            self.topRatedMovies.append(movie)
-                            // fetch runtime from separate API
-                            self.fetchMovieWith(movie.id!) { (movie) in
-                                self.topRatedMovies.first(where: { (element) -> Bool in
-                                    return element.id == movie.id
-                                })?.runtime = movie.runtime
-                            }
-                        }
-                        
-                        DispatchQueue.main.async {
-                            if self.topRatedMovies.count > 6 {
-                                for i in 0..<self.topRatedMovies.count {
-                                    if i == 5 { break }
-                                    self.imagesForCarousel.append(self.topRatedMovies[i])
-                                }
-                                
-                                self.setupCarousel()
-                            }
-                            self.attempToReloadCollection()
-                        }
-                    }
-                } catch {
-                    
-                }
-            }).resume()
-        }
-    }
-    
-    private func fetchPopular() {
-        if let request = createRequest(urlString: "https://api.themoviedb.org/3/movie/popular?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&page=1") {
-            URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
-                if error != nil {
-                    return
-                }
-                
-                do {
-                    let dictionary = try JSONSerialization.jsonObject(with: data!, options: []) as? [String : Any]
-                    if let results = dictionary!["results"] as? [AnyObject] {
-                        for movieObj in results {
-                            let movie = Movie(dictionary: (movieObj as? [String: Any])!)
-                            self.popularMoviesInBoxOffice.append(movie)
-                            // fetch runtime from separate API
-                            self.fetchMovieWith(movie.id!) { (movie) in
-                                self.popularMoviesInBoxOffice.first(where: { (element) -> Bool in
-                                    return element.id == movie.id
-                                })?.runtime = movie.runtime
-                            }
-                        }
-                        
-                        DispatchQueue.main.async {
-                            TrailerController.movies += self.popularMoviesInBoxOffice
-                            self.sortByReleaseDay(movies: &TrailerController.movies)
-                            
-                            self.attempToReloadCollection()
-                        }
-                    }
-                } catch {
-                    
-                }
-            }).resume()
+            }
+        } else if segue.identifier == "openSearchPage" {
+            // when magnifier icon is clicked
+            if let searchPageVC = segue.destination as? SearchViewController {
+                searchPageVC.movies                     = TrailerController.movies
+                searchPageVC.navigationItem.title       = "Search"
+            }
         }
     }
     
@@ -201,20 +129,9 @@ class TrailerController: UIViewController {
     @objc func openTrailCollectionView(gesture: UITapGestureRecognizer) {
         performSegue(withIdentifier: "openTrailerVideoPage", sender: self)
     }
-    
-    var timer : Timer?
-
-    func attempToReloadCollection() {
-        self.timer?.invalidate()
-        self.timer = Timer.scheduledTimer(timeInterval: 0.08, target: self, selector: #selector(self.handleReloadCollection), userInfo: nil, repeats: false)
-    }
-
-    @objc func handleReloadCollection() {
-        DispatchQueue.main.async {
-            self.trailerCollectionView.reloadData()
-        }
-    }
 }
+
+// slider
 
 extension TrailerController: UIScrollViewDelegate {
     func setupCarousel() {
@@ -222,6 +139,8 @@ extension TrailerController: UIScrollViewDelegate {
         imagesCarousel.showsHorizontalScrollIndicator = false
         imagesCarousel.isPagingEnabled = true
         setupPageIndicator()
+        
+        // inital stage
         if imagesForCarousel.count == 0 {
             let imageView = TrailerCellImageView()
             imagesCarousel.addSubview(imageView)
@@ -229,6 +148,7 @@ extension TrailerController: UIScrollViewDelegate {
             imageView.activityIndicatior.centerYAnchor.constraint(equalTo: imagesCarousel.centerYAnchor).isActive = true
             imageView.activityIndicatior.centerXAnchor.constraint(equalTo: imagesCarousel.centerXAnchor).isActive = true
         } else {
+            // update when it gets pictures
             for i in 0..<imagesForCarousel.count {
                 let imageView = UIImageView()
                 if let post_path = imagesForCarousel[i].poster_path {
@@ -283,6 +203,8 @@ extension TrailerController: UIScrollViewDelegate {
     }
 }
 
+// set up collectionView
+
 extension TrailerController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: trailerCell, for: indexPath) as! TrailerCell
@@ -308,6 +230,8 @@ extension TrailerController: UICollectionViewDataSource, UICollectionViewDelegat
             if let post_path = cell.movie?.poster_path {
                 let urlString = imageFetchUrlHeader + post_path
                 cell.moviePostImageVIew.loadImageUsingCacheWithUrlString(urlString: urlString)
+                cell.moviePostImageVIew.layer.borderColor = UIColor.orange.cgColor
+                cell.moviePostImageVIew.layer.borderWidth = 0.5
             }
         }
     }
@@ -322,43 +246,7 @@ extension TrailerController: UICollectionViewDataSource, UICollectionViewDelegat
             performSegue(withIdentifier: "movieDetailSegue", sender: self)
         }
     }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "openTrailerVideoPage" {
-            // when trailer button is clicked
-            if let trailerVideoVC = segue.destination as? TrailerVideosController {
-                trailerVideoVC.trailerController = self
-            }
-        } else if segue.identifier == "movieDetailSegue" {
-            // when each one of the movie's post it clicked
-            let nav = segue.destination as! UINavigationController
-            let movieDetailVC = nav.topViewController as! MovieDetailViewController
-            movieDetailVC.movie = selectedMovie
-            selectedMovie = nil
-        } else if segue.identifier == "openMovieCollectionPage" {
-            // when each one of the section header is clicked
-            if let movieCollectionVC = segue.destination as? MoviesCollectionViewController {
-                if headerSelected == 0 {
-                    movieCollectionVC.navigationItem.title = "In Theaters"
-                    movieCollectionVC.movies = topRatedMovies
-                } else if headerSelected == 1 {
-                    movieCollectionVC.navigationItem.title = "Top box office"
-                    movieCollectionVC.movies = popularMoviesInBoxOffice
-                } else if headerSelected == 2 {
-                    // when favorite header is clicked
-                    movieCollectionVC.navigationItem.title = "Upcoming Movies"
-                    movieCollectionVC.movies = upcomingMovies
-                }
-            }
-        } else if segue.identifier == "openSearchPage" {
-            // when magnifier icon is clicked
-            if let searchPageVC = segue.destination as? SearchViewController {
-                searchPageVC.movies = TrailerController.movies
-                searchPageVC.navigationItem.title = "Search"
-            }
-        }
-    }
-    
+   
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let headerCell = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: trailerHeaderCell, for: indexPath) as! TrailerHeaderCell
         setupEventWhenTouched(headerCell: headerCell)

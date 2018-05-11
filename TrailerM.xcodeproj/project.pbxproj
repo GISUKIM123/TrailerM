@@ -35,6 +35,8 @@
 		F6930D812096903100A89C23 /* MovieDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6930D802096903100A89C23 /* MovieDetailViewController.swift */; };
 		F6989E932093EB58005CA059 /* CalendarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6989E922093EB58005CA059 /* CalendarController.swift */; };
 		F6989E952093EB79005CA059 /* SettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6989E942093EB79005CA059 /* SettingsController.swift */; };
+		F6AF350720A5EC0500453035 /* TrailerController_DataFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6AF350620A5EC0500453035 /* TrailerController_DataFetch.swift */; };
+		F6AF350920A5EE8A00453035 /* GenreController_DataFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6AF350820A5EE8A00453035 /* GenreController_DataFetch.swift */; };
 		F6B172CC209A398A0091C950 /* LocationSettingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B172CB209A398A0091C950 /* LocationSettingHelper.swift */; };
 		F6B172CE209A605F0091C950 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F6B172CD209A605F0091C950 /* GoogleService-Info.plist */; };
 		F6E2F7EA209FA9A20051B6E4 /* SearchViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E2F7E9209FA9A20051B6E4 /* SearchViewCell.swift */; };
@@ -87,6 +89,8 @@
 		F6930D802096903100A89C23 /* MovieDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailViewController.swift; sourceTree = "<group>"; };
 		F6989E922093EB58005CA059 /* CalendarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarController.swift; sourceTree = "<group>"; };
 		F6989E942093EB79005CA059 /* SettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsController.swift; sourceTree = "<group>"; };
+		F6AF350620A5EC0500453035 /* TrailerController_DataFetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailerController_DataFetch.swift; sourceTree = "<group>"; };
+		F6AF350820A5EE8A00453035 /* GenreController_DataFetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenreController_DataFetch.swift; sourceTree = "<group>"; };
 		F6B172CB209A398A0091C950 /* LocationSettingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSettingHelper.swift; sourceTree = "<group>"; };
 		F6B172CD209A605F0091C950 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F6E2F7E9209FA9A20051B6E4 /* SearchViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewCell.swift; sourceTree = "<group>"; };
@@ -225,6 +229,8 @@
 				F6930D802096903100A89C23 /* MovieDetailViewController.swift */,
 				F63674C52097CA4C008DE7DB /* TrailerVideosController.swift */,
 				F648D93020993DAA0001A7FB /* SearchViewController.swift */,
+				F6AF350620A5EC0500453035 /* TrailerController_DataFetch.swift */,
+				F6AF350820A5EE8A00453035 /* GenreController_DataFetch.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -445,9 +451,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F6AF350720A5EC0500453035 /* TrailerController_DataFetch.swift in Sources */,
 				F6930D7B2096668B00A89C23 /* TrailerHeaderCell.swift in Sources */,
 				F6989E952093EB79005CA059 /* SettingsController.swift in Sources */,
 				F61392DB20A0B54900DB4402 /* SlideInGenreView.swift in Sources */,
+				F6AF350920A5EE8A00453035 /* GenreController_DataFetch.swift in Sources */,
 				F68A63542093C5C700DFF8FF /* TabbarController.swift in Sources */,
 				F6989E932093EB58005CA059 /* CalendarController.swift in Sources */,
 				F63674C62097CA4C008DE7DB /* TrailerVideosController.swift in Sources */,

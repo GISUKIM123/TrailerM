@@ -29,8 +29,15 @@ class GenreController: UIViewController, UIScrollViewDelegate {
     
     var isFetching : Bool = false
     
+    var slideInGenreViewLauncher : SlideInGenreView?
+    
+    var blackView : UIView?
+    
+    var leftBarButton : UIBarButtonItem?
+    
     override func viewWillAppear(_ animated: Bool) {
         movies = TrailerController.movies
+        
         if sortedMovies == nil {
             sortedMovies = movies?.filter({ (movie) -> Bool in
                 return Double(movie.vote_average ?? 0) > 7
@@ -50,34 +57,15 @@ class GenreController: UIViewController, UIScrollViewDelegate {
         colorNavigationBar(barColor: UIColor.init(red: 255/255, green: 255/255, blue: 255/255, alpha: 1), tintColor: .orange)
     }
     
-    func fetchGenreList() {
-        genres = [Genre]()
-        if let request = createRequest(urlString: "https://api.themoviedb.org/3/genre/movie/list?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US"){
-            URLSession.shared.dataTask(with: request) { (data, response, error) in
-                if error != nil {
-                    return
-                }
-                
-                do {
-                    let data = try JSONSerialization.jsonObject(with: data!, options: [])
-                    guard let dictionary = data as? [String : Any] else {
-                        return
-                    }
-                    
-                    if let genresArray = dictionary["genres"] as? [AnyObject] {
-                        for rawGenreData in genresArray {
-                            let genre = Genre(dictionary: rawGenreData as! [String : Any])
-                            self.genres?.append(genre)
-                        }
-                    }
-                }catch {
-                    
-                }
-            }.resume()
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "openDetailPageFromGenreController" {
+            let nav = segue.destination as! UINavigationController
+            if let movieDetailVC = nav.topViewController as? MovieDetailViewController {
+                movieDetailVC.movie     = selectedMovie
+                selectedMovie           = nil
+            }
         }
     }
-    
-    var leftBarButton : UIBarButtonItem?
     
     func setupGenreButton() {
         let button = UIButton()
@@ -88,8 +76,26 @@ class GenreController: UIViewController, UIScrollViewDelegate {
         leftBarButton = UIBarButtonItem(customView: button)
         navigationItem.leftBarButtonItem = leftBarButton
     }
-    var slideInGenreViewLauncher : SlideInGenreView?
-    
+  
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let scrollViewHeight = genreCollectionView.frame.size.height
+        let scrollContentSizeHeight = genreCollectionView.contentSize.height
+        let scrollOffset = genreCollectionView.contentOffset.y
+
+        if (scrollOffset + scrollViewHeight > scrollContentSizeHeight) {
+            // then we are at the end
+            
+            if !isFetching {
+                isFetching = true
+                fetchMoreByGenre(id: selectedGenre?.id ?? 35)
+            }
+        }
+    }
+}
+
+// slid-in view
+
+extension GenreController {
     @objc func slideInGenreView() {
         slideInGenreViewLauncher = SlideInGenreView()
         slideInGenreViewLauncher?.genreController = self
@@ -98,8 +104,6 @@ class GenreController: UIViewController, UIScrollViewDelegate {
         slideInGenreViewLauncher?.blackView = blackView
         slideInGenreViewLauncher?.shoowSlider()
     }
-    
-    var blackView : UIView?
     
     func setupContainerViewForSlider() {
         blackView = UIView()
@@ -138,64 +142,10 @@ class GenreController: UIViewController, UIScrollViewDelegate {
         selectedGenre = genre
         
         fetchMoreByGenre(id: genre.id!)
-        
+        // update a title of the page
         navigationItem.title = genre.name
         
         handleDismissSliderContainerView()
-    }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let scrollViewHeight = genreCollectionView.frame.size.height
-        let scrollContentSizeHeight = genreCollectionView.contentSize.height
-        let scrollOffset = genreCollectionView.contentOffset.y
-
-        if (scrollOffset + scrollViewHeight > scrollContentSizeHeight) {
-            // then we are at the end
-            
-            if !isFetching {
-                isFetching = true
-                fetchMoreByGenre(id: selectedGenre?.id ?? 35)
-            }
-        }
-    }
-    
-    func fetchMoreByGenre(id: Int) {
-        if let request = createRequest(urlString: "https://api.themoviedb.org/3/genre/\(id)/movies?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US&include_adult=false&sort_by=created_at.asc&page=\(nextPageNumber)") {
-            URLSession.shared.dataTask(with: request) { (data, response, error) in
-                if error != nil {
-                    return
-                }
-                
-                do {
-                    let dataJson = try JSONSerialization.jsonObject(with: data!, options: [])
-                    guard let dictionary = dataJson as? [String : Any] else { return }
-                    if let movies = dictionary["results"] as? [AnyObject] {
-                        for movieDictionary in movies {
-                            let movieUnderGenreSelected = Movie(dictionary: movieDictionary as! [String : Any])
-                            self.sortedMovies?.append(movieUnderGenreSelected)
-                            // fetch runtime from separate API
-                            self.fetchMovieWith(movieUnderGenreSelected.id!) { (movie) in
-                                self.sortedMovies?.first(where: { (element) -> Bool in
-                                    return element.id == movie.id
-                                })?.runtime = movie.runtime
-                            }
-                        }
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self.nextPageNumber += 1
-                        self.isFetching = false
-                        self.genreCollectionView.reloadData()
-                    }
-                }catch {
-                    
-                }
-            }.resume()
-        }
-    }
-    
-    func resetNextPageNumber() {
-        nextPageNumber = 1
     }
 }
 
@@ -229,16 +179,6 @@ extension GenreController: UICollectionViewDataSource, UICollectionViewDelegateF
         if let cell = gesture.view as? GenreCell {
             selectedMovie = sortedMovies![cell.tag]
             performSegue(withIdentifier: "openDetailPageFromGenreController", sender: self)
-        }
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "openDetailPageFromGenreController" {
-            let nav = segue.destination as! UINavigationController
-            if let movieDetailVC = nav.topViewController as? MovieDetailViewController {
-                movieDetailVC.movie     = selectedMovie
-                selectedMovie           = nil
-            }
         }
     }
     
