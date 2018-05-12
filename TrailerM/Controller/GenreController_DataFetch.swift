@@ -13,28 +13,30 @@ import UIKit
 extension GenreController {
     func fetchGenreList() {
         genres = [Genre]()
-        if let request = createRequest(urlString: "https://api.themoviedb.org/3/genre/movie/list?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US"){
-            URLSession.shared.dataTask(with: request) { (data, response, error) in
-                if error != nil {
-                    return
-                }
-                
-                do {
-                    let data = try JSONSerialization.jsonObject(with: data!, options: [])
-                    guard let dictionary = data as? [String : Any] else {
+        if genres?.count == 0 {
+            if let request = createRequest(urlString: "https://api.themoviedb.org/3/genre/movie/list?api_key=24cfbd59fbd336bfd1a218ec40733d66&language=en-US"){
+                URLSession.shared.dataTask(with: request) { (data, response, error) in
+                    if error != nil {
                         return
                     }
                     
-                    if let genresArray = dictionary["genres"] as? [AnyObject] {
-                        for rawGenreData in genresArray {
-                            let genre = Genre(dictionary: rawGenreData as! [String : Any])
-                            self.genres?.append(genre)
+                    do {
+                        let data = try JSONSerialization.jsonObject(with: data!, options: [])
+                        guard let dictionary = data as? [String : Any] else {
+                            return
                         }
+                        
+                        if let genresArray = dictionary["genres"] as? [AnyObject] {
+                            for rawGenreData in genresArray {
+                                let genre = Genre(dictionary: rawGenreData as! [String : Any])
+                                self.genres?.append(genre)
+                            }
+                        }
+                    }catch {
+                        
                     }
-                }catch {
-                    
-                }
                 }.resume()
+            }
         }
     }
     

@@ -36,8 +36,8 @@ class GenreController: UIViewController, UIScrollViewDelegate {
     var leftBarButton : UIBarButtonItem?
     
     override func viewWillAppear(_ animated: Bool) {
+        fetchGenreList()
         movies = TrailerController.movies
-        
         if sortedMovies == nil {
             sortedMovies = movies?.filter({ (movie) -> Bool in
                 return Double(movie.vote_average ?? 0) > 7
@@ -49,8 +49,6 @@ class GenreController: UIViewController, UIScrollViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        fetchGenreList()
         
         navigationItem.title = "Genre"
         setupGenreButton()
